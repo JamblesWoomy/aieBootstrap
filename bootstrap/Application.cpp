@@ -1,35 +1,29 @@
 #include "aie/bootstrap/Application.h"
 
+#include <aie/bootstrap/Input.h>
 #include <glew/glew.h>
 #include <glfw/glfw3.h>
-
 #include <glm/glm.hpp>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
-#include <iostream>
-
-#include "aie/bootstrap/Input.h"
-
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_opengl3.h"
-
-namespace aie {
-
+namespace aie
+{
 	Application::Application()
-		: m_window(nullptr),
-		m_gameOver(false),
-		m_fps(0) {
+		: m_window{ nullptr }, m_gameOver{ false }, m_fps{ 0 }
+	{
 	}
 
-	Application::~Application() {
-	}
+	Application::~Application() = default;
 
-	bool Application::CreateWindow(const char* title, int width, int height, bool fullscreen) {
-
+	bool Application::CreateWindow(const char* title, const int width, const int height, const bool fullscreen)
+	{
 		if (glfwInit() == GL_FALSE)
 			return false;
 
-		m_window = glfwCreateWindow(width, height, title, (fullscreen ? glfwGetPrimaryMonitor() : nullptr), nullptr);
-		if (m_window == nullptr) {
+		m_window = glfwCreateWindow(width, height, title, fullscreen ? glfwGetPrimaryMonitor() : nullptr, nullptr);
+		if (m_window == nullptr) 
+		{
 			glfwTerminate();
 			return false;
 		}
@@ -37,7 +31,8 @@ namespace aie {
 		glfwMakeContextCurrent(m_window);
 
 		glewExperimental = GL_TRUE;
-		if (glewInit() != GLEW_OK) {
+		if (glewInit() != GLEW_OK)
+		{
 			glfwDestroyWindow(m_window);
 			glfwTerminate();
 			return false;
@@ -61,8 +56,8 @@ namespace aie {
 		return true;
 	}
 
-	void Application::DestroyWindow() {
-
+	void Application::DestroyWindow()
+	{
 		ShutdownImGui();
 		Input::Destroy();
 
@@ -112,7 +107,7 @@ namespace aie {
 
 	void Application::ImGuiRender()
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		const ImGuiIO& io = ImGui::GetIO();
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -129,25 +124,22 @@ namespace aie {
 		}
 	}
 
-	void Application::Run(const char* title, int width, int height, bool fullscreen) {
-
+	void Application::Run(const char* title, const int width, const int height, const bool fullscreen)
+	{
 		// start game loop if successfully initialised
-		if (CreateWindow(title, width, height, fullscreen) &&
-			Startup()) {
-
+		if (CreateWindow(title, width, height, fullscreen) && Startup()) 
+		{
 			// variables for timing
 			double prevTime = glfwGetTime();
-			double currTime = 0;
-			double deltaTime = 0;
 			unsigned int frames = 0;
 			double fpsInterval = 0;
 
 			// loop while game is running
-			while (!m_gameOver) {
-
+			while (!m_gameOver) 
+			{
 				// Update delta time
-				currTime = glfwGetTime();
-				deltaTime = currTime - prevTime;
+				const double currTime = glfwGetTime();
+				double deltaTime = currTime - prevTime;
 				if (deltaTime > 0.1f)
 					deltaTime = 0.1f;
 
@@ -166,23 +158,24 @@ namespace aie {
 				// Update fps every second
 				frames++;
 				fpsInterval += deltaTime;
-				if (fpsInterval >= 1.0f) {
+				if (fpsInterval >= 1.0f) 
+				{
 					m_fps = frames;
 					frames = 0;
 					fpsInterval -= 1.0f;
 				}
 
-				// clear imgui
+				// clear ImGui
 				ImGuiNewFrame();
 
-				Update(float(deltaTime));
+				Update(static_cast<float>(deltaTime));
 
 				Draw();
 
-				// Draw IMGUI last
+				// Draw ImGui last
 				ImGuiRender();
 
-				//present backbuffer to the monitor
+				//present back buffer to the monitor
 				glfwSwapBuffers(m_window);
 
 				// should the game exit?
@@ -195,40 +188,58 @@ namespace aie {
 		DestroyWindow();
 	}
 
-	bool Application::HasWindowClosed() {
+	bool Application::HasWindowClosed() const
+	{
 		return glfwWindowShouldClose(m_window) == GL_TRUE;
 	}
 
-	void Application::ClearScreen() {
+	void Application::ClearScreen()
+	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	}
 
-	void Application::SetBackgroundColour(float r, float g, float b, float a) {
+	void Application::SetBackgroundColour(const float r, const float g, const float b, const float a)
+	{
 		glClearColor(r, g, b, a);
 	}
 
-	void Application::SetVSync(bool enable) {
-		glfwSwapInterval(enable ? 1 : 0);
+	void Application::SetVSync(const bool enabled)
+	{
+		glfwSwapInterval(enabled ? 1 : 0);
 	}
 
-	void Application::SetShowCursor(bool visible) {
+	void Application::Quit()
+	{
+		m_gameOver = true;
+	}
+
+	GLFWwindow* Application::GetWindowPtr() const
+	{
+		return m_window;
+	}
+
+	void Application::SetShowCursor(const bool visible) const
+	{
 		glfwSetInputMode(m_window, GLFW_CURSOR, visible ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN);
 	}
 
-	unsigned int Application::GetWindowWidth() const {
+	unsigned int Application::GetWindowWidth() const
+	{
 		int w = 0, h = 0;
 		glfwGetWindowSize(m_window, &w, &h);
 		return w;
 	}
 
-	unsigned int Application::GetWindowHeight() const {
+	unsigned int Application::GetWindowHeight() const
+	{
 		int w = 0, h = 0;
 		glfwGetWindowSize(m_window, &w, &h);
 		return h;
 	}
 
-	float Application::GetTime() const {
-		return (float)glfwGetTime();
+	float Application::GetTime() const
+	{
+		return static_cast<float>(glfwGetTime());
 	}
 
 } // namespace aie

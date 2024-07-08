@@ -12,234 +12,250 @@ using std::map;
 
 struct GLFWwindow;
 
-namespace aie {
+constexpr int MOUSE_BUTTON_COUNT = 8;
 
+namespace aie
+{
 	// a giant list of input codes for keyboard and mouse
-	enum EInputCodes : int {
-		INPUT_KEY_UNKNOWN = -1,
-		INPUT_KEY_SPACE = 32,
-		INPUT_KEY_APOSTROPHE = 39,
-		INPUT_KEY_COMMA = 44,
-		INPUT_KEY_MINUS = 45,
-		INPUT_KEY_PERIOD = 46,
-		INPUT_KEY_SLASH = 47,
-		INPUT_KEY_0 = 48,
-		INPUT_KEY_1 = 49,
-		INPUT_KEY_2 = 50,
-		INPUT_KEY_3 = 51,
-		INPUT_KEY_4 = 52,
-		INPUT_KEY_5 = 53,
-		INPUT_KEY_6 = 54,
-		INPUT_KEY_7 = 55,
-		INPUT_KEY_8 = 56,
-		INPUT_KEY_9 = 57,
-		INPUT_KEY_SEMICOLON = 59,
-		INPUT_KEY_EQUAL = 61,
-		INPUT_KEY_A = 65,
-		INPUT_KEY_B = 66,
-		INPUT_KEY_C = 67,
-		INPUT_KEY_D = 68,
-		INPUT_KEY_E = 69,
-		INPUT_KEY_F = 70,
-		INPUT_KEY_G = 71,
-		INPUT_KEY_H = 72,
-		INPUT_KEY_I = 73,
-		INPUT_KEY_J = 74,
-		INPUT_KEY_K = 75,
-		INPUT_KEY_L = 76,
-		INPUT_KEY_M = 77,
-		INPUT_KEY_N = 78,
-		INPUT_KEY_O = 79,
-		INPUT_KEY_P = 80,
-		INPUT_KEY_Q = 81,
-		INPUT_KEY_R = 82,
-		INPUT_KEY_S = 83,
-		INPUT_KEY_T = 84,
-		INPUT_KEY_U = 85,
-		INPUT_KEY_V = 86,
-		INPUT_KEY_W = 87,
-		INPUT_KEY_X = 88,
-		INPUT_KEY_Y = 89,
-		INPUT_KEY_Z = 90,
-		INPUT_KEY_LEFT_BRACKET = 91,
-		INPUT_KEY_BACKSLASH = 92,
-		INPUT_KEY_RIGHT_BRACKET = 93,
-		INPUT_KEY_GRAVE_ACCENT = 96,
-		INPUT_KEY_ESCAPE = 256,
-		INPUT_KEY_ENTER = 257,
-		INPUT_KEY_TAB = 258,
-		INPUT_KEY_BACKSPACE = 259,
-		INPUT_KEY_INSERT = 260,
-		INPUT_KEY_DELETE = 261,
-		INPUT_KEY_RIGHT = 262,
-		INPUT_KEY_LEFT = 263,
-		INPUT_KEY_DOWN = 264,
-		INPUT_KEY_UP = 265,
-		INPUT_KEY_PAGE_UP = 266,
-		INPUT_KEY_PAGE_DOWN = 267,
-		INPUT_KEY_HOME = 268,
-		INPUT_KEY_END = 269,
-		INPUT_KEY_CAPS_LOCK = 280,
-		INPUT_KEY_SCROLL_LOCK = 281,
-		INPUT_KEY_NUM_LOCK = 282,
-		INPUT_KEY_PRINT_SCREEN = 283,
-		INPUT_KEY_PAUSE = 284,
-		INPUT_KEY_F1 = 290,
-		INPUT_KEY_F2 = 291,
-		INPUT_KEY_F3 = 292,
-		INPUT_KEY_F4 = 293,
-		INPUT_KEY_F5 = 294,
-		INPUT_KEY_F6 = 295,
-		INPUT_KEY_F7 = 296,
-		INPUT_KEY_F8 = 297,
-		INPUT_KEY_F9 = 298,
-		INPUT_KEY_F10 = 299,
-		INPUT_KEY_F11 = 300,
-		INPUT_KEY_F12 = 301,
-		INPUT_KEY_F13 = 302,
-		INPUT_KEY_F14 = 303,
-		INPUT_KEY_F15 = 304,
-		INPUT_KEY_F16 = 305,
-		INPUT_KEY_F17 = 306,
-		INPUT_KEY_F18 = 307,
-		INPUT_KEY_F19 = 308,
-		INPUT_KEY_F20 = 309,
-		INPUT_KEY_F21 = 310,
-		INPUT_KEY_F22 = 311,
-		INPUT_KEY_F23 = 312,
-		INPUT_KEY_F24 = 313,
-		INPUT_KEY_F25 = 314,
-		INPUT_KEY_KP_0 = 320,
-		INPUT_KEY_KP_1 = 321,
-		INPUT_KEY_KP_2 = 322,
-		INPUT_KEY_KP_3 = 323,
-		INPUT_KEY_KP_4 = 324,
-		INPUT_KEY_KP_5 = 325,
-		INPUT_KEY_KP_6 = 326,
-		INPUT_KEY_KP_7 = 327,
-		INPUT_KEY_KP_8 = 328,
-		INPUT_KEY_KP_9 = 329,
-		INPUT_KEY_KP_DECIMAL = 330,
-		INPUT_KEY_KP_DIVIDE = 331,
-		INPUT_KEY_KP_MULTIPLY = 332,
-		INPUT_KEY_KP_SUBTRACT = 333,
-		INPUT_KEY_KP_ADD = 334,
-		INPUT_KEY_KP_ENTER = 335,
-		INPUT_KEY_KP_EQUAL = 336,
-		INPUT_KEY_LEFT_SHIFT = 340,
-		INPUT_KEY_LEFT_CONTROL = 341,
-		INPUT_KEY_LEFT_ALT = 342,
-		INPUT_KEY_RIGHT_SHIFT = 344,
-		INPUT_KEY_RIGHT_CONTROL = 345,
-		INPUT_KEY_RIGHT_ALT = 346,
-		INPUT_MOUSE_BUTTON_LEFT = 0,
-		INPUT_MOUSE_BUTTON_RIGHT = 1,
-		INPUT_MOUSE_BUTTON_MIDDLE = 2,
-		INPUT_MOUSE_BUTTON_4 = 3,
-		INPUT_MOUSE_BUTTON_5 = 4,
-		INPUT_MOUSE_BUTTON_6 = 5,
-		INPUT_MOUSE_BUTTON_7 = 6,
-		INPUT_MOUSE_BUTTON_8 = 7,
+	enum EInputCodes : int
+	{
+		KeyUnknown = -1,
+		KeySpace = 32,
+		KeyApostrophe = 39,
+		KeyComma = 44,
+		KeyMinus = 45,
+		KeyPeriod = 46,
+		KeySlash = 47,
+		Key0 = 48,
+		Key1 = 49,
+		Key2 = 50,
+		Key3 = 51,
+		Key4 = 52,
+		Key5 = 53,
+		Key6 = 54,
+		Key7 = 55,
+		Key8 = 56,
+		Key9 = 57,
+		KeySemicolon = 59,
+		KeyEqual = 61,
+		KeyA = 65,
+		KeyB = 66,
+		KeyC = 67,
+		KeyD = 68,
+		KeyE = 69,
+		KeyF = 70,
+		KeyG = 71,
+		KeyH = 72,
+		KeyI = 73,
+		KeyJ = 74,
+		KeyK = 75,
+		KeyL = 76,
+		KeyM = 77,
+		KeyN = 78,
+		KeyO = 79,
+		KeyP = 80,
+		KeyQ = 81,
+		KeyR = 82,
+		KeyS = 83,
+		KeyT = 84,
+		KeyU = 85,
+		KeyV = 86,
+		KeyW = 87,
+		KeyX = 88,
+		KeyY = 89,
+		KeyZ = 90,
+		KeyLeftBracket = 91,
+		KeyBackslash = 92,
+		KeyRightBracket = 93,
+		KeyGraveAccent = 96,
+		KeyEscape = 256,
+		KeyEnter = 257,
+		KeyTab = 258,
+		KeyBackspace = 259,
+		KeyInsert = 260,
+		KeyDelete = 261,
+		KeyRight = 262,
+		KeyLeft = 263,
+		KeyDown = 264,
+		KeyUp = 265,
+		KeyPageUp = 266,
+		KeyPageDown = 267,
+		KeyHome = 268,
+		KeyEnd = 269,
+		KeyCapsLock = 280,
+		KeyScrollLock = 281,
+		KeyNumLock = 282,
+		KeyPrintScreen = 283,
+		KeyPause = 284,
+		KeyF1 = 290,
+		KeyF2 = 291,
+		KeyF3 = 292,
+		KeyF4 = 293,
+		KeyF5 = 294,
+		KeyF6 = 295,
+		KeyF7 = 296,
+		KeyF8 = 297,
+		KeyF9 = 298,
+		KeyF10 = 299,
+		KeyF11 = 300,
+		KeyF12 = 301,
+		KeyF13 = 302,
+		KeyF14 = 303,
+		KeyF15 = 304,
+		KeyF16 = 305,
+		KeyF17 = 306,
+		KeyF18 = 307,
+		KeyF19 = 308,
+		KeyF20 = 309,
+		KeyF21 = 310,
+		KeyF22 = 311,
+		KeyF23 = 312,
+		KeyF24 = 313,
+		KeyF25 = 314,
+		KeyKeypad0 = 320,
+		KeyKeypad1 = 321,
+		KeyKeypad2 = 322,
+		KeyKeypad3 = 323,
+		KeyKeypad4 = 324,
+		KeyKeypad5 = 325,
+		KeyKeypad6 = 326,
+		KeyKeypad7 = 327,
+		KeyKeypad8 = 328,
+		KeyKeypad9 = 329,
+		KeyKeypadDecimal = 330,
+		KeyKeypadDivide = 331,
+		KeyKeypadMultiply = 332,
+		KeyKeypadSubtract = 333,
+		KeyKeypadAdd = 334,
+		KeyKeypadEnter = 335,
+		KeyKeypadEqual = 336,
+		KeyLeftShift = 340,
+		KeyLeftControl = 341,
+		KeyLeftAlt = 342,
+		KeyRightShift = 344,
+		KeyRightControl = 345,
+		KeyRightAlt = 346,
+		MouseButtonLeft = 0,
+		MouseButtonRight = 1,
+		MouseButtonMiddle = 2,
+		MouseButton4 = 3,
+		MouseButton5 = 4,
+		MouseButton6 = 5,
+		MouseButton7 = 6,
+		MouseButton8 = 7,
 	};
 
 	// a singleton class that manages Input from the keyboard and mouse
-	class Input {
-	public:
-
-		// returns access to the singleton instance
-		static Input* GetInstance() { return m_instance; }
-
-		// query the keyboard state
-		DLL bool IsKeyDown(int inputKeyID);
-		DLL bool IsKeyUp(int inputKeyID);
-
-		// returns true if the key was pressed / released this frame
-		DLL bool WasKeyPressed(int inputKeyID);
-		DLL bool WasKeyReleased(int inputKeyID);
-
-		// returns access to all keys that are currently pressed
-		DLL const vector<int>& GetPressedKeys() const;
-		DLL const vector<unsigned int>& GetPressedCharacters() const;
-
-		// query the mouse button state
-		DLL bool IsMouseButtonDown(int inputMouseID);
-		DLL bool IsMouseButtonUp(int inputMouseID);
-
-		// returns true if the button was pressed / released this frame
-		DLL bool WasMouseButtonPressed(int inputMouseID);
-		DLL bool WasMouseButtonReleased(int inputMouseID);
-
-		// query the mouse position
-		DLL int GetMouseX();
-		DLL int GetMouseY();
-		DLL void GetMouseXY(int* x, int* y);
-
-		// query mouse movement
-		DLL int GetMouseDeltaX();
-		DLL int GetMouseDeltaY();
-		DLL void GetMouseDelta(int* x, int* y);
-
-		// query how far the mouse wheel has been moved 
-		DLL double GetMouseScroll();
-
-		// delgates for attaching input observers to the Input class
-		typedef function<void(GLFWwindow* window, int key, int scancode, int action, int mods)> KeyCallback;
-		typedef function<void(GLFWwindow* window, unsigned int character)> CharCallback;
-		typedef function<void(GLFWwindow* window, int button, int action, int mods)> MouseButtonCallback;
-		typedef function<void(GLFWwindow* window, double xoffset, double yoffset)> MouseScrollCallback;
-		typedef function<void(GLFWwindow* window, double x, double y)> MouseMoveCallback;
-
-		// functions for attatching input observers
-		DLL void AttachKeyObserver(const KeyCallback& callback) { m_keyCallbacks.push_back(callback); }
-		DLL void AttachCharObserver(const CharCallback& callback) { m_charCallbacks.push_back(callback); }
-		DLL void AttachMouseButtonObserver(const MouseButtonCallback& callback) { m_mouseButtonCallbacks.push_back(callback); }
-		DLL void AttachMouseMoveObserver(const MouseMoveCallback& callback) { m_mouseMoveCallbacks.push_back(callback); }
-		DLL void AttachMouseScrollObserver(const MouseScrollCallback& callback) { m_mouseScrollCallbacks.push_back(callback); }
-
-	protected:
-
+	class DLL Input
+	{
 		// just giving the Application class access to the Input singleton
 		friend class Application;
 
-		// singleton pointer
-		DLL static Input* m_instance;
+	public:
+		// delegates for attaching input observers to the Input class
+		typedef function<void(GLFWwindow*, int, int, int, int)> KeyCallback;
+		typedef function<void(GLFWwindow*, unsigned int)> CharCallback;
+		typedef function<void(GLFWwindow*, int, int, int)> MouseButtonCallback;
+		typedef function<void(GLFWwindow*, double, double)> MouseScrollCallback;
+		typedef function<void(GLFWwindow*, double, double)> MouseMoveCallback;
 
+	public:
+		// returns access to the singleton instance
+		static Input* GetInstance();
+
+	public:
+		// query the keyboard state
+		bool IsKeyDown(int inputKeyID) const;
+		bool IsKeyUp(int inputKeyID) const;
+
+		// returns true if the key was pressed / released this frame
+		bool WasKeyPressed(int inputKeyID) const;
+		bool WasKeyReleased(int inputKeyID) const;
+
+		// returns access to all keys that are currently pressed
+		const vector<int>& GetPressedKeys() const;
+		const vector<unsigned int>& GetPressedCharacters() const;
+
+		// query the mouse button state
+		bool IsMouseButtonDown(int inputMouseID);
+		bool IsMouseButtonUp(int inputMouseID);
+
+		// returns true if the button was pressed / released this frame
+		bool WasMouseButtonPressed(int inputMouseID);
+		bool WasMouseButtonReleased(int inputMouseID);
+
+		// query the mouse position
+		int GetMouseX();
+		int GetMouseY();
+		void GetMouseXY(int* x, int* y);
+
+		// query mouse movement
+		int GetMouseDeltaX();
+		int GetMouseDeltaY();
+		void GetMouseDelta(int* x, int* y);
+
+		// query how far the mouse wheel has been moved 
+		double GetMouseScroll();
+
+		// functions for attaching input observers
+		void AttachKeyObserver(const KeyCallback& callback) { m_keyCallbacks.push_back(callback); }
+		void AttachCharObserver(const CharCallback& callback) { m_charCallbacks.push_back(callback); }
+		void AttachMouseButtonObserver(const MouseButtonCallback& callback) { m_mouseButtonCallbacks.push_back(callback); }
+		void AttachMouseMoveObserver(const MouseMoveCallback& callback) { m_mouseMoveCallbacks.push_back(callback); }
+		void AttachMouseScrollObserver(const MouseScrollCallback& callback) { m_mouseScrollCallbacks.push_back(callback); }
+
+	protected:
+		// singleton pointer
+		static Input* m_instance;
+
+	protected:
 		// only want the Application class to be able to create / destroy
-		static void Create() { m_instance = new Input(); }
-		static void Destroy() { delete m_instance; }
+		static void Create();
+		static void Destroy();
 
 		// should be called once by the application each frame after the current update
 		// or before glfwPollEvents
-		DLL void ClearStatus();
+		void ClearStatus();
 
 	private:
+		// disabling the warnings here as they are a non-issue and clog up the error output
+#pragma warning (push)
+#pragma warning (disable : 4251)
+		vector<int> m_pressedKeys;
+		vector<unsigned int> m_pressedCharacters;
+#pragma warning (pop)
 
-		// constructor private for singleton
-		DLL Input();
-		DLL ~Input();
+		int	m_mouseX;
+		int	m_mouseY;
+		int	m_oldMouseX;
+		int	m_oldMouseY;
+		double m_mouseScroll;
 
-		vector<int>			m_pressedKeys;
-		vector<unsigned int>	m_pressedCharacters;
+		bool m_firstMouseMove;	// flag for first mouse input after start or mouse entering window
 
-		int		m_mouseX;
-		int		m_mouseY;
-		int		m_oldMouseX;
-		int		m_oldMouseY;
-		double	m_mouseScroll;
+		void OnMouseMove(int newXPos, int newYPos);
 
-		bool	m_firstMouseMove;	// flag for first mouse input after start or mouse entering window
-
-		DLL void OnMouseMove(int newXPos, int newYPos);
-
-		vector<KeyCallback>			m_keyCallbacks;
-		vector<CharCallback>		m_charCallbacks;
-		vector<MouseMoveCallback>	m_mouseMoveCallbacks;
+		// disabling the warnings here as they are a non-issue and clog up the error output
+#pragma warning (push)
+#pragma warning (disable : 4251)
+		vector<KeyCallback> m_keyCallbacks;
+		vector<CharCallback> m_charCallbacks;
+		vector<MouseMoveCallback> m_mouseMoveCallbacks;
 		vector<MouseButtonCallback>	m_mouseButtonCallbacks;
 		vector<MouseScrollCallback>	m_mouseScrollCallbacks;
+#pragma warning (pop)
 
 		// used to track down/up/released/pressed
-		int* m_lastKeys, * m_currentKeys;
-		int m_lastButtons[8], m_currentButtons[8];
+		int* m_lastKeys;
+		int* m_currentKeys;
+		int m_lastButtons[MOUSE_BUTTON_COUNT];
+		int m_currentButtons[MOUSE_BUTTON_COUNT];
+
+	private:
+		// constructor private for singleton
+		Input();
+		~Input();
+
 	};
 
 } // namespace aie

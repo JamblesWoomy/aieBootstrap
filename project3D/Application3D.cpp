@@ -84,7 +84,7 @@ void Application3D::Update(float deltaTime) {
 	// Quit if we press escape
 	aie::Input* input = aie::Input::GetInstance();
 
-	if (input->IsKeyDown(aie::INPUT_KEY_ESCAPE))
+	if (input->IsKeyDown(aie::KeyEscape))
 		Quit();
 }
 

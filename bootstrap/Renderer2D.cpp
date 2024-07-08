@@ -1,17 +1,16 @@
 #include "aie/bootstrap/Renderer2D.h"
 
+#include <aie/bootstrap/Font.h>
+#include <aie/bootstrap/Texture.h>
 #include <glew/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/ext.hpp>
 #include <stb/stb_truetype.h>
 
-#include "aie/bootstrap/Texture.h"
-#include "aie/bootstrap/Font.h"
-
-namespace aie {
-
-	Renderer2D::Renderer2D() {
-
+namespace aie
+{
+	Renderer2D::Renderer2D()
+	{
 		SetRenderColour(1, 1, 1, 1);
 		SetUVRect(0.0f, 0.0f, 1.0f, 1.0f);
 
@@ -19,7 +18,7 @@ namespace aie {
 		m_cameraY = 0;
 
 		unsigned int pixels[1] = { 0xFFFFFFFF };
-		m_nullTexture = new Texture(1, 1, Texture::RGBA, (unsigned char*)pixels);
+		m_nullTexture = new Texture(1, 1, Texture::RGBA, reinterpret_cast<unsigned char*>(pixels));
 
 		m_currentVertex = 0;
 		m_currentIndex = 0;
@@ -31,7 +30,8 @@ namespace aie {
 
 		m_currentTexture = 0;
 
-		for (int i = 0; i < TEXTURE_STACK_SIZE; i++) {
+		for (int i = 0; i < TEXTURE_STACK_SIZE; i++)
+		{
 			m_textureStack[i] = nullptr;
 			m_fontTexture[i] = 0;
 		}
@@ -65,8 +65,8 @@ namespace aie {
 							} else fragColour = vColour; \
 						if (fragColour.a < 0.001f) discard; }";
 
-		unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
-		unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
+		const unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
+		const unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
 
 		glShaderSource(vs, 1, (const char**)&vertexShader, 0);
 		glCompileShader(vs);
@@ -84,12 +84,13 @@ namespace aie {
 
 		int success = GL_FALSE;
 		glGetProgramiv(m_shader, GL_LINK_STATUS, &success);
-		if (success == GL_FALSE) {
+		if (success == GL_FALSE)
+		{
 			int infoLogLength = 0;
 			glGetProgramiv(m_shader, GL_INFO_LOG_LENGTH, &infoLogLength);
 			char* infoLog = new char[infoLogLength];
 
-			glGetProgramInfoLog(m_shader, infoLogLength, 0, infoLog);
+			glGetProgramInfoLog(m_shader, infoLogLength, nullptr, infoLog);
 			printf("Error: Failed to link SpriteBatch shader program!\n%s\n", infoLog);
 			delete[] infoLog;
 		}
@@ -98,8 +99,9 @@ namespace aie {
 
 		// set texture locations
 		char buf[32];
-		for (int i = 0; i < TEXTURE_STACK_SIZE; ++i) {
-			sprintf_s(buf, "textureStack[%i]", i);
+		for (int i = 0; i < TEXTURE_STACK_SIZE; ++i)
+		{
+			sprintf_s(buf, "textureStack[%i]", i); // NOLINT(cert-err33-c)
 			glUniform1i(glGetUniformLocation(m_shader, buf), i);
 		}
 
@@ -108,16 +110,17 @@ namespace aie {
 		glDeleteShader(vs);
 		glDeleteShader(fs);
 
-		// pre calculate the indices... they will always be the same
-		int index = 0;
-		for (int i = 0; i < (MAX_SPRITES * 6);) {
-			m_indices[i++] = (index + 0);
-			m_indices[i++] = (index + 1);
-			m_indices[i++] = (index + 2);
+		// pre-calculate the indices... they will always be the same
+		short index = 0;
+		for (size_t i = 0; i < MAX_SPRITES * 6;)
+		{
+			m_indices[i++] = index + 0;
+			m_indices[i++] = index + 1;
+			m_indices[i++] = index + 2;
 
-			m_indices[i++] = (index + 0);
-			m_indices[i++] = (index + 2);
-			m_indices[i++] = (index + 3);
+			m_indices[i++] = index + 0;
+			m_indices[i++] = index + 2;
+			m_indices[i++] = index + 3;
 			index += 4;
 		}
 
@@ -128,18 +131,20 @@ namespace aie {
 		glGenBuffers(1, &m_ibo);
 		glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, (MAX_SPRITES * 6) * sizeof(unsigned short), (void*)(&m_indices[0]), GL_STATIC_DRAW);
-		glBufferData(GL_ARRAY_BUFFER, (MAX_SPRITES * 4) * sizeof(SBVertex), m_vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, MAX_SPRITES * 6 * sizeof(unsigned short),
+			static_cast<void*>(&m_indices[0]), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, MAX_SPRITES * 4 * sizeof(SBVertex), m_vertices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(SBVertex), (char*)0);
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(SBVertex), (char*)16);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(SBVertex), (char*)32);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(SBVertex), nullptr);
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(SBVertex), reinterpret_cast<char*>(16));
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(SBVertex), reinterpret_cast<char*>(32));
 		glBindVertexArray(0);
 	}
 
-	Renderer2D::~Renderer2D() {
+	Renderer2D::~Renderer2D()
+	{
 		glDeleteBuffers(1, &m_vbo);
 		glDeleteBuffers(1, &m_ibo);
 		glDeleteBuffers(1, &m_vao);
@@ -147,7 +152,8 @@ namespace aie {
 		delete m_nullTexture;
 	}
 
-	void Renderer2D::Begin() {
+	void Renderer2D::Begin()
+	{
 		m_renderBegun = true;
 		m_currentIndex = 0;
 		m_currentVertex = 0;
@@ -159,7 +165,8 @@ namespace aie {
 
 		glUseProgram(m_shader);
 
-		auto projection = glm::ortho(m_cameraX, m_cameraX + (float)width, m_cameraY, m_cameraY + (float)height, 1.0f, -101.0f);
+		auto projection = glm::ortho(m_cameraX, m_cameraX + static_cast<float>(width), m_cameraY,
+			m_cameraY + static_cast<float>(height), 1.0f, -101.0f);
 		glUniformMatrix4fv(glGetUniformLocation(m_shader, "projectionMatrix"), 1, false, &projection[0][0]);
 
 		glEnable(GL_BLEND);
@@ -168,8 +175,9 @@ namespace aie {
 		SetRenderColour(1, 1, 1, 1);
 	}
 
-	void Renderer2D::End() {
-		if (m_renderBegun == false)
+	void Renderer2D::End()
+	{
+		if (!m_renderBegun)
 			return;
 
 		FlushBatch();
@@ -179,57 +187,65 @@ namespace aie {
 		m_renderBegun = false;
 	}
 
-	void Renderer2D::DrawBox(float xPos, float yPos, float width, float height, float rotation, float depth) {
+	void Renderer2D::DrawBox(const float xPos, const float yPos, const float width,
+		const float height, const float rotation, const float depth)
+	{
 		DrawSprite(nullptr, xPos, yPos, width, height, rotation, depth);
 	}
 
-	void Renderer2D::DrawCircle(float xPos, float yPos, float radius, float depth) {
-
+	void Renderer2D::DrawCircle(const float xPos, const float yPos, const float radius, const float depth)
+	{
 		if (ShouldFlush(33, 96))
 			FlushBatch();
-		unsigned int textureID = PushTexture(m_nullTexture);
 
-		int startIndex = m_currentVertex;
+		const unsigned int textureID = PushTexture(m_nullTexture);
+
+		const short startIndex = m_currentVertex;
 
 		// centre vertex
 		m_vertices[m_currentVertex].pos[0] = xPos;
 		m_vertices[m_currentVertex].pos[1] = yPos;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = 0;
-		m_vertices[m_currentVertex].texcoord[1] = 0;
+		m_vertices[m_currentVertex].texCoord[0] = 0;
+		m_vertices[m_currentVertex].texCoord[1] = 0;
 		m_currentVertex++;
 
-		float rotDelta = glm::pi<float>() * 2 / 32;
+		constexpr float rotDelta = glm::pi<float>() * 2 / 32;
 
+		constexpr int segmentCount = 32;
 		// 32 segment sphere
-		for (int i = 0; i < 32; ++i) {
-
+		for (int i = 0; i < segmentCount; ++i)
+		{
 			if (ShouldFlush())
 				FlushBatch();
 
-			m_vertices[m_currentVertex].pos[0] = glm::sin(rotDelta * i) * radius + xPos;
-			m_vertices[m_currentVertex].pos[1] = glm::cos(rotDelta * i) * radius + yPos;
+			const float iF = static_cast<float>(i);
+
+			m_vertices[m_currentVertex].pos[0] = glm::sin(rotDelta * iF) * radius + xPos;
+			m_vertices[m_currentVertex].pos[1] = glm::cos(rotDelta * iF) * radius + yPos;
 			m_vertices[m_currentVertex].pos[2] = depth;
-			m_vertices[m_currentVertex].pos[3] = (float)textureID;
+			m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 			m_vertices[m_currentVertex].color[0] = m_r;
 			m_vertices[m_currentVertex].color[1] = m_g;
 			m_vertices[m_currentVertex].color[2] = m_b;
 			m_vertices[m_currentVertex].color[3] = m_a;
-			m_vertices[m_currentVertex].texcoord[0] = 0.5f;
-			m_vertices[m_currentVertex].texcoord[1] = 0.5f;
+			m_vertices[m_currentVertex].texCoord[0] = 0.5f;
+			m_vertices[m_currentVertex].texCoord[1] = 0.5f;
 			m_currentVertex++;
 
-			if (i == (32 - 1)) {
+			if (i == segmentCount - 1)
+			{
 				m_indices[m_currentIndex++] = startIndex;
 				m_indices[m_currentIndex++] = startIndex + 1;
 				m_indices[m_currentIndex++] = m_currentVertex - 1;
 			}
-			else {
+			else
+			{
 				m_indices[m_currentIndex++] = startIndex;
 				m_indices[m_currentIndex++] = m_currentVertex;
 				m_indices[m_currentIndex++] = m_currentVertex - 1;
@@ -237,208 +253,222 @@ namespace aie {
 		}
 	}
 
-	void Renderer2D::DrawSprite(Texture* texture,
-		float xPos, float yPos,
-		float width, float height,
-		float rotation, float depth, float xOrigin, float yOrigin) {
+	void Renderer2D::DrawSprite(Texture* texture, const float xPos, const float yPos, float width, float height,
+		const float rotation, const float depth, const float xOrigin, const float yOrigin)
+	{
 		if (texture == nullptr)
 			texture = m_nullTexture;
 
 		if (ShouldFlush())
 			FlushBatch();
-		unsigned int textureID = PushTexture(texture);
+
+		const unsigned int textureID = PushTexture(texture);
 
 		if (width == 0.0f)
-			width = (float)texture->GetWidth();
+			width = static_cast<float>(texture->GetWidth());
+
 		if (height == 0.0f)
-			height = (float)texture->GetHeight();
+			height = static_cast<float>(texture->GetHeight());
 
-		float tlX = (0.0f - xOrigin) * width;		float tlY = (0.0f - yOrigin) * height;
-		float trX = (1.0f - xOrigin) * width;		float trY = (0.0f - yOrigin) * height;
-		float brX = (1.0f - xOrigin) * width;		float brY = (1.0f - yOrigin) * height;
-		float blX = (0.0f - xOrigin) * width;		float blY = (1.0f - yOrigin) * height;
+		float tlX = (0.0f - xOrigin) * width;
+		float tlY = (0.0f - yOrigin) * height;
+		float trX = (1.0f - xOrigin) * width;
+		float trY = (0.0f - yOrigin) * height;
+		float brX = (1.0f - xOrigin) * width;
+		float brY = (1.0f - yOrigin) * height;
+		float blX = (0.0f - xOrigin) * width;
+		float blY = (1.0f - yOrigin) * height;
 
-		if (rotation != 0.0f) {
-			float si = glm::sin(rotation); float co = glm::cos(rotation);
+		if (rotation != 0.0f)
+		{
+			const float si = glm::sin(rotation);
+			const float co = glm::cos(rotation);
+
 			RotateAround(tlX, tlY, tlX, tlY, si, co);
 			RotateAround(trX, trY, trX, trY, si, co);
 			RotateAround(brX, brY, brX, brY, si, co);
 			RotateAround(blX, blY, blX, blY, si, co);
 		}
 
-		int index = m_currentVertex;
+		const short index = m_currentVertex;
 
 		m_vertices[m_currentVertex].pos[0] = xPos + tlX;
 		m_vertices[m_currentVertex].pos[1] = yPos + tlY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY + m_uvH;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY + m_uvH;
 		m_currentVertex++;
 
 		m_vertices[m_currentVertex].pos[0] = xPos + trX;
 		m_vertices[m_currentVertex].pos[1] = yPos + trY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX + m_uvW;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY + m_uvH;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX + m_uvW;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY + m_uvH;
 		m_currentVertex++;
 
 		m_vertices[m_currentVertex].pos[0] = xPos + brX;
 		m_vertices[m_currentVertex].pos[1] = yPos + brY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX + m_uvW;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX + m_uvW;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY;
 		m_currentVertex++;
 
 		m_vertices[m_currentVertex].pos[0] = xPos + blX;
 		m_vertices[m_currentVertex].pos[1] = yPos + blY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY;
 		m_currentVertex++;
 
-		m_indices[m_currentIndex++] = (index + 0);
-		m_indices[m_currentIndex++] = (index + 2);
-		m_indices[m_currentIndex++] = (index + 3);
+		m_indices[m_currentIndex++] = index + 0;
+		m_indices[m_currentIndex++] = index + 2;
+		m_indices[m_currentIndex++] = index + 3;
 
-		m_indices[m_currentIndex++] = (index + 0);
-		m_indices[m_currentIndex++] = (index + 1);
-		m_indices[m_currentIndex++] = (index + 2);
+		m_indices[m_currentIndex++] = index + 0;
+		m_indices[m_currentIndex++] = index + 1;
+		m_indices[m_currentIndex++] = index + 2;
 	}
 
-	void Renderer2D::DrawSpriteTransformed3x3(Texture* texture,
-		float* transformMat3x3,
-		float width, float height, float depth,
-		float xOrigin, float yOrigin) {
+	void Renderer2D::DrawSpriteTransformed3x3(Texture* texture, float* transformMat3X3, float width,
+		float height, const float depth, const float xOrigin, const float yOrigin)
+	{
 		if (texture == nullptr)
 			texture = m_nullTexture;
 
 		if (ShouldFlush())
 			FlushBatch();
 
-		unsigned int textureID = PushTexture(texture);
+		const unsigned int textureID = PushTexture(texture);
 
 		if (width == 0.0f)
-			width = (float)texture->GetWidth();
+			width = static_cast<float>(texture->GetWidth());
 		if (height == 0.0f)
-			height = (float)texture->GetHeight();
+			height = static_cast<float>(texture->GetHeight());
 
-		float tlX = (0.0f - xOrigin) * width;		float tlY = (0.0f - yOrigin) * height;
-		float trX = (1.0f - xOrigin) * width;		float trY = (0.0f - yOrigin) * height;
-		float brX = (1.0f - xOrigin) * width;		float brY = (1.0f - yOrigin) * height;
-		float blX = (0.0f - xOrigin) * width;		float blY = (1.0f - yOrigin) * height;
+		float tlX = (0.0f - xOrigin) * width;
+		float tlY = (0.0f - yOrigin) * height;
+		float trX = (1.0f - xOrigin) * width;
+		float trY = (0.0f - yOrigin) * height;
+		float brX = (1.0f - xOrigin) * width;
+		float brY = (1.0f - yOrigin) * height;
+		float blX = (0.0f - xOrigin) * width;
+		float blY = (1.0f - yOrigin) * height;
 
 		// transform the points by the matrix
 		// 0 3 6
 		// 1 4 7
 		// 2 5 8
-		float x, y;
-		x = tlX; y = tlY;
-		tlX = x * transformMat3x3[0] + y * transformMat3x3[3] + transformMat3x3[6];
-		tlY = x * transformMat3x3[1] + y * transformMat3x3[4] + transformMat3x3[7];
-		x = trX; y = trY;
-		trX = x * transformMat3x3[0] + y * transformMat3x3[3] + transformMat3x3[6];
-		trY = x * transformMat3x3[1] + y * transformMat3x3[4] + transformMat3x3[7];
-		x = brX; y = brY;
-		brX = x * transformMat3x3[0] + y * transformMat3x3[3] + transformMat3x3[6];
-		brY = x * transformMat3x3[1] + y * transformMat3x3[4] + transformMat3x3[7];
-		x = blX; y = blY;
-		blX = x * transformMat3x3[0] + y * transformMat3x3[3] + transformMat3x3[6];
-		blY = x * transformMat3x3[1] + y * transformMat3x3[4] + transformMat3x3[7];
+		float x = tlX;
+		float y = tlY;
+		tlX = x * transformMat3X3[0] + y * transformMat3X3[3] + transformMat3X3[6];
+		tlY = x * transformMat3X3[1] + y * transformMat3X3[4] + transformMat3X3[7];
 
-		int index = m_currentVertex;
+		x = trX; y = trY;
+		trX = x * transformMat3X3[0] + y * transformMat3X3[3] + transformMat3X3[6];
+		trY = x * transformMat3X3[1] + y * transformMat3X3[4] + transformMat3X3[7];
+
+		x = brX; y = brY;
+		brX = x * transformMat3X3[0] + y * transformMat3X3[3] + transformMat3X3[6];
+		brY = x * transformMat3X3[1] + y * transformMat3X3[4] + transformMat3X3[7];
+
+		x = blX; y = blY;
+		blX = x * transformMat3X3[0] + y * transformMat3X3[3] + transformMat3X3[6];
+		blY = x * transformMat3X3[1] + y * transformMat3X3[4] + transformMat3X3[7];
+
+		const short index = m_currentVertex;
 
 		m_vertices[m_currentVertex].pos[0] = tlX;
 		m_vertices[m_currentVertex].pos[1] = tlY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY + m_uvH;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY + m_uvH;
 		m_currentVertex++;
 
 		m_vertices[m_currentVertex].pos[0] = trX;
 		m_vertices[m_currentVertex].pos[1] = trY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX + m_uvW;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY + m_uvH;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX + m_uvW;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY + m_uvH;
 		m_currentVertex++;
 
 		m_vertices[m_currentVertex].pos[0] = brX;
 		m_vertices[m_currentVertex].pos[1] = brY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX + m_uvW;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX + m_uvW;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY;
 		m_currentVertex++;
 
 		m_vertices[m_currentVertex].pos[0] = blX;
 		m_vertices[m_currentVertex].pos[1] = blY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY;
 		m_currentVertex++;
 
-		m_indices[m_currentIndex++] = (index + 0);
-		m_indices[m_currentIndex++] = (index + 2);
-		m_indices[m_currentIndex++] = (index + 3);
+		m_indices[m_currentIndex++] = index + 0;
+		m_indices[m_currentIndex++] = index + 2;
+		m_indices[m_currentIndex++] = index + 3;
 
-		m_indices[m_currentIndex++] = (index + 0);
-		m_indices[m_currentIndex++] = (index + 1);
-		m_indices[m_currentIndex++] = (index + 2);
+		m_indices[m_currentIndex++] = index + 0;
+		m_indices[m_currentIndex++] = index + 1;
+		m_indices[m_currentIndex++] = index + 2;
 	}
 
-	void Renderer2D::DrawSpriteTransformed4x4(Texture* texture,
-		float* transformMat4x4,
-		float width, float height, float depth,
-		float xOrigin, float yOrigin) {
+	void Renderer2D::DrawSpriteTransformed4x4(Texture* texture, float* transformMat4x4, float width, 
+		float height, const float depth, const float xOrigin, const float yOrigin)
+	{
 		if (texture == nullptr)
 			texture = m_nullTexture;
 
 		if (ShouldFlush())
 			FlushBatch();
+
 		unsigned int textureID = PushTexture(texture);
 
 		if (width == 0.0f)
-			width = (float)texture->GetWidth();
+			width = static_cast<float>(texture->GetWidth());
 		if (height == 0.0f)
-			height = (float)texture->GetHeight();
+			height = static_cast<float>(texture->GetHeight());
 
 		float tlX = (0.0f - xOrigin) * width;		float tlY = (0.0f - yOrigin) * height;
 		float trX = (1.0f - xOrigin) * width;		float trY = (0.0f - yOrigin) * height;
@@ -450,68 +480,71 @@ namespace aie {
 		// 1 5 9  13
 		// 2 6 10 14
 		// 3 7 11 15
-		float x, y;
-		x = tlX; y = tlY;
+		float x = tlX;
+		float y = tlY;
 		tlX = x * transformMat4x4[0] + y * transformMat4x4[4] + transformMat4x4[12];
 		tlY = x * transformMat4x4[1] + y * transformMat4x4[5] + transformMat4x4[13];
+
 		x = trX; y = trY;
 		trX = x * transformMat4x4[0] + y * transformMat4x4[4] + transformMat4x4[12];
 		trY = x * transformMat4x4[1] + y * transformMat4x4[5] + transformMat4x4[13];
+
 		x = brX; y = brY;
 		brX = x * transformMat4x4[0] + y * transformMat4x4[4] + transformMat4x4[12];
 		brY = x * transformMat4x4[1] + y * transformMat4x4[5] + transformMat4x4[13];
+
 		x = blX; y = blY;
 		blX = x * transformMat4x4[0] + y * transformMat4x4[4] + transformMat4x4[12];
 		blY = x * transformMat4x4[1] + y * transformMat4x4[5] + transformMat4x4[13];
 
-		int index = m_currentVertex;
+		const short index = m_currentVertex;
 
 		m_vertices[m_currentVertex].pos[0] = tlX;
 		m_vertices[m_currentVertex].pos[1] = tlY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY + m_uvH;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY + m_uvH;
 		m_currentVertex++;
 
 		m_vertices[m_currentVertex].pos[0] = trX;
 		m_vertices[m_currentVertex].pos[1] = trY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX + m_uvW;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY + m_uvH;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX + m_uvW;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY + m_uvH;
 		m_currentVertex++;
 
 		m_vertices[m_currentVertex].pos[0] = brX;
 		m_vertices[m_currentVertex].pos[1] = brY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX + m_uvW;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX + m_uvW;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY;
 		m_currentVertex++;
 
 		m_vertices[m_currentVertex].pos[0] = blX;
 		m_vertices[m_currentVertex].pos[1] = blY;
 		m_vertices[m_currentVertex].pos[2] = depth;
-		m_vertices[m_currentVertex].pos[3] = (float)textureID;
+		m_vertices[m_currentVertex].pos[3] = static_cast<float>(textureID);
 		m_vertices[m_currentVertex].color[0] = m_r;
 		m_vertices[m_currentVertex].color[1] = m_g;
 		m_vertices[m_currentVertex].color[2] = m_b;
 		m_vertices[m_currentVertex].color[3] = m_a;
-		m_vertices[m_currentVertex].texcoord[0] = m_uvX;
-		m_vertices[m_currentVertex].texcoord[1] = m_uvY;
+		m_vertices[m_currentVertex].texCoord[0] = m_uvX;
+		m_vertices[m_currentVertex].texCoord[1] = m_uvY;
 		m_currentVertex++;
 
 		m_indices[m_currentIndex++] = (index + 0);
@@ -523,20 +556,21 @@ namespace aie {
 		m_indices[m_currentIndex++] = (index + 2);
 	}
 
-	void Renderer2D::DrawLine(float x1, float y1, float x2, float y2, float thickness, float depth) {
+	void Renderer2D::DrawLine(const float x1, const float y1, const float x2, const float y2, 
+		const float thickness, const float depth)
+	{
+		const float xDiff = x2 - x1;
+		const float yDiff = y2 - y1;
+		const float len = glm::sqrt(xDiff * xDiff + yDiff * yDiff);
+		const float xDir = xDiff / len;
+		const float yDir = yDiff / len;
 
-		float xDiff = x2 - x1;
-		float yDiff = y2 - y1;
-		float len = glm::sqrt(xDiff * xDiff + yDiff * yDiff);
-		float xDir = xDiff / len;
-		float yDir = yDiff / len;
+		const float rot = glm::atan(yDir, xDir);
 
-		float rot = glm::atan(yDir, xDir);
-
-		float uvX = m_uvX;
-		float uvY = m_uvY;
-		float uvW = m_uvW;
-		float uvH = m_uvH;
+		const float uvX = m_uvX;
+		const float uvY = m_uvY;
+		const float uvW = m_uvW;
+		const float uvH = m_uvH;
 
 		SetUVRect(0.0f, 0.0f, 1.0f, 1.0f);
 
@@ -545,13 +579,12 @@ namespace aie {
 		SetUVRect(uvX, uvY, uvW, uvH);
 	}
 
-	void Renderer2D::DrawText(Font* font, const char* text, float xPos, float yPos, float depth) {
-
-		if (font == nullptr ||
-			font->m_glHandle == 0)
+	void Renderer2D::DrawText(Font* font, const char* text, float xPos, float yPos, const float depth)
+	{
+		if (font == nullptr || font->m_glHandle == 0)
 			return;
 
-		stbtt_aligned_quad Q = {};
+		stbtt_aligned_quad q = {};
 
 		if (ShouldFlush() || m_currentTexture >= TEXTURE_STACK_SIZE - 1)
 			FlushBatch();
@@ -565,11 +598,12 @@ namespace aie {
 		int w = 0, h = 0;
 		glfwGetWindowSize(glfwGetCurrentContext(), &w, &h);
 
-		yPos = h - yPos;
+		yPos = static_cast<float>(h) - yPos;
 
-		while (*text != 0) {
-
-			if (ShouldFlush() || m_currentTexture >= TEXTURE_STACK_SIZE - 1) {
+		while (*text != 0) 
+		{
+			if (ShouldFlush() || m_currentTexture >= TEXTURE_STACK_SIZE - 1) 
+			{
 				FlushBatch();
 
 				glActiveTexture(GL_TEXTURE0 + m_currentTexture++);
@@ -578,53 +612,54 @@ namespace aie {
 				m_fontTexture[m_currentTexture - 1] = 1;
 			}
 
-			stbtt_GetBakedQuad((stbtt_bakedchar*)font->m_glyphData, font->m_textureWidth, font->m_textureHeight, (unsigned char)*text, &xPos, &yPos, &Q, 1);
+			stbtt_GetBakedQuad(static_cast<stbtt_bakedchar*>(font->m_glyphData), font->m_textureWidth, 
+				font->m_textureHeight, static_cast<unsigned char>(*text), &xPos, &yPos, &q, 1);
 
-			int index = m_currentVertex;
+			const short index = m_currentVertex;
 
-			m_vertices[m_currentVertex].pos[0] = Q.x0;
-			m_vertices[m_currentVertex].pos[1] = h - Q.y1;
+			m_vertices[m_currentVertex].pos[0] = q.x0;
+			m_vertices[m_currentVertex].pos[1] = static_cast<float>(h) - q.y1;
 			m_vertices[m_currentVertex].pos[2] = depth;
-			m_vertices[m_currentVertex].pos[3] = (float)m_currentTexture - 1;
+			m_vertices[m_currentVertex].pos[3] = static_cast<float>(m_currentTexture) - 1;
 			m_vertices[m_currentVertex].color[0] = m_r;
 			m_vertices[m_currentVertex].color[1] = m_g;
 			m_vertices[m_currentVertex].color[2] = m_b;
 			m_vertices[m_currentVertex].color[3] = m_a;
-			m_vertices[m_currentVertex].texcoord[0] = Q.s0;
-			m_vertices[m_currentVertex].texcoord[1] = Q.t1;
+			m_vertices[m_currentVertex].texCoord[0] = q.s0;
+			m_vertices[m_currentVertex].texCoord[1] = q.t1;
 			m_currentVertex++;
-			m_vertices[m_currentVertex].pos[0] = Q.x1;
-			m_vertices[m_currentVertex].pos[1] = h - Q.y1;
+			m_vertices[m_currentVertex].pos[0] = q.x1;
+			m_vertices[m_currentVertex].pos[1] = static_cast<float>(h) - q.y1;
 			m_vertices[m_currentVertex].pos[2] = depth;
-			m_vertices[m_currentVertex].pos[3] = (float)m_currentTexture - 1;
+			m_vertices[m_currentVertex].pos[3] = static_cast<float>(m_currentTexture) - 1;
 			m_vertices[m_currentVertex].color[0] = m_r;
 			m_vertices[m_currentVertex].color[1] = m_g;
 			m_vertices[m_currentVertex].color[2] = m_b;
 			m_vertices[m_currentVertex].color[3] = m_a;
-			m_vertices[m_currentVertex].texcoord[0] = Q.s1;
-			m_vertices[m_currentVertex].texcoord[1] = Q.t1;
+			m_vertices[m_currentVertex].texCoord[0] = q.s1;
+			m_vertices[m_currentVertex].texCoord[1] = q.t1;
 			m_currentVertex++;
-			m_vertices[m_currentVertex].pos[0] = Q.x1;
-			m_vertices[m_currentVertex].pos[1] = h - Q.y0;
+			m_vertices[m_currentVertex].pos[0] = q.x1;
+			m_vertices[m_currentVertex].pos[1] = static_cast<float>(h) - q.y0;
 			m_vertices[m_currentVertex].pos[2] = depth;
-			m_vertices[m_currentVertex].pos[3] = (float)m_currentTexture - 1;
+			m_vertices[m_currentVertex].pos[3] = static_cast<float>(m_currentTexture) - 1;
 			m_vertices[m_currentVertex].color[0] = m_r;
 			m_vertices[m_currentVertex].color[1] = m_g;
 			m_vertices[m_currentVertex].color[2] = m_b;
 			m_vertices[m_currentVertex].color[3] = m_a;
-			m_vertices[m_currentVertex].texcoord[0] = Q.s1;
-			m_vertices[m_currentVertex].texcoord[1] = Q.t0;
+			m_vertices[m_currentVertex].texCoord[0] = q.s1;
+			m_vertices[m_currentVertex].texCoord[1] = q.t0;
 			m_currentVertex++;
-			m_vertices[m_currentVertex].pos[0] = Q.x0;
-			m_vertices[m_currentVertex].pos[1] = h - Q.y0;
+			m_vertices[m_currentVertex].pos[0] = q.x0;
+			m_vertices[m_currentVertex].pos[1] = static_cast<float>(h) - q.y0;
 			m_vertices[m_currentVertex].pos[2] = depth;
-			m_vertices[m_currentVertex].pos[3] = (float)m_currentTexture - 1;
+			m_vertices[m_currentVertex].pos[3] = static_cast<float>(m_currentTexture) - 1;
 			m_vertices[m_currentVertex].color[0] = m_r;
 			m_vertices[m_currentVertex].color[1] = m_g;
 			m_vertices[m_currentVertex].color[2] = m_b;
 			m_vertices[m_currentVertex].color[3] = m_a;
-			m_vertices[m_currentVertex].texcoord[0] = Q.s0;
-			m_vertices[m_currentVertex].texcoord[1] = Q.t0;
+			m_vertices[m_currentVertex].texCoord[0] = q.s0;
+			m_vertices[m_currentVertex].texCoord[1] = q.t0;
 			m_currentVertex++;
 
 			m_indices[m_currentIndex++] = (index + 0);
@@ -639,19 +674,23 @@ namespace aie {
 		}
 	}
 
-	bool Renderer2D::ShouldFlush(int additionalVertices, int additionalIndices) {
-		return (m_currentVertex + additionalVertices) >= (MAX_SPRITES * 4) ||
-			(m_currentIndex + additionalIndices) >= (MAX_SPRITES * 6);
+	bool Renderer2D::ShouldFlush(const int additionalVertices, const int additionalIndices) const
+	{
+		return m_currentVertex + additionalVertices >= static_cast<int>(MAX_SPRITES * 4) ||
+			m_currentIndex + additionalIndices >= static_cast<int>(MAX_SPRITES * 6);
 	}
 
-	void Renderer2D::FlushBatch() {
+	void Renderer2D::FlushBatch()
+	{
+		// don't render anything
+		if (m_currentVertex == 0 || m_currentIndex == 0 || !m_renderBegun)
+			return;
 
-		// dont render anything
-		if (m_currentVertex == 0 || m_currentIndex == 0 || m_renderBegun == false)
-			return; char buf[32];
+		char buf[32];
 
-		for (int i = 0; i < TEXTURE_STACK_SIZE; ++i) {
-			sprintf_s(buf, "isFontTexture[%i]", i);
+		for (int i = 0; i < TEXTURE_STACK_SIZE; ++i) 
+		{  
+			sprintf_s(buf, "isFontTexture[%i]", i); // NOLINT(cert-err33-c)
 			glUniform1i(glGetUniformLocation(m_shader, buf), m_fontTexture[i]);
 		}
 
@@ -666,14 +705,15 @@ namespace aie {
 		glBufferSubData(GL_ARRAY_BUFFER, 0, m_currentVertex * sizeof(SBVertex), m_vertices);
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m_currentIndex * sizeof(unsigned short), m_indices);
 
-		glDrawElements(GL_TRIANGLES, m_currentIndex, GL_UNSIGNED_SHORT, 0);
+		glDrawElements(GL_TRIANGLES, m_currentIndex, GL_UNSIGNED_SHORT, nullptr);
 
 		glBindVertexArray(0);
 
 		glDepthFunc(depthFunc);
 
 		// clear the active textures
-		for (unsigned int i = 0; i < m_currentTexture; i++) {
+		for (unsigned int i = 0; i < m_currentTexture; i++) 
+		{
 			m_textureStack[i] = nullptr;
 			m_fontTexture[i] = 0;
 		}
@@ -684,16 +724,17 @@ namespace aie {
 		m_currentTexture = 0;
 	}
 
-	unsigned int Renderer2D::PushTexture(Texture* texture) {
-
+	unsigned int Renderer2D::PushTexture(Texture* texture)
+	{
 		// check if the texture is already in use
-		// if so, return as we dont need to add it to our list of active txtures again
-		for (unsigned int i = 0; i <= m_currentTexture; i++) {
+		// if so, return as we don't need to add it to our list of active textures again
+		for (unsigned int i = 0; i <= m_currentTexture; i++)
+		{
 			if (m_textureStack[i] == texture)
 				return i;
 		}
 
-		// if we've used all the textures we can, than we need to flush to make room for another texture change
+		// if we've used all the textures we can, then we need to flush to make room for another texture change
 		if (m_currentTexture >= TEXTURE_STACK_SIZE - 1)
 			FlushBatch();
 
@@ -715,21 +756,25 @@ namespace aie {
 		m_a = a;
 	}
 
-	void Renderer2D::SetRenderColour(unsigned int colour) {
-		m_r = ((colour & 0xFF000000) >> 24) / 255.0f;
-		m_g = ((colour & 0x00FF0000) >> 16) / 255.0f;
-		m_b = ((colour & 0x0000FF00) >> 8) / 255.0f;
-		m_a = ((colour & 0x000000FF) >> 0) / 255.0f;
+	void Renderer2D::SetRenderColour(const unsigned int colour)
+	{
+		m_r = ((colour & 0xFF000000) >> 24) / 255.0f;  // NOLINT(bugprone-narrowing-conversions)
+		m_g = ((colour & 0x00FF0000) >> 16) / 255.0f;  // NOLINT(bugprone-narrowing-conversions)
+		m_b = ((colour & 0x0000FF00) >> 8) / 255.0f;  // NOLINT(bugprone-narrowing-conversions)
+		m_a = ((colour & 0x000000FF) >> 0) / 255.0f;  // NOLINT(bugprone-narrowing-conversions)
 	}
 
-	void Renderer2D::SetUVRect(float uvX, float uvY, float uvW, float uvH) {
+	void Renderer2D::SetUVRect(const float uvX, const float uvY, const float uvW, const float uvH)
+	{
 		m_uvX = uvX;
 		m_uvY = uvY;
 		m_uvW = uvW;
 		m_uvH = uvH;
 	}
 
-	void Renderer2D::RotateAround(float inX, float inY, float& outX, float& outY, float sin, float cos) {
+	void Renderer2D::RotateAround(const float inX, const float inY, float& outX, float& outY, 
+		const float sin, const float cos)
+	{
 		outX = inX * cos - inY * sin;
 		outY = inX * sin + inY * cos;
 	}

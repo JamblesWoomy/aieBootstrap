@@ -45,22 +45,22 @@ void Application2D::Update(float deltaTime) {
 	float camPosY;
 	m_2dRenderer->GetCameraPos(camPosX, camPosY);
 
-	if (input->IsKeyDown(aie::INPUT_KEY_UP))
+	if (input->IsKeyDown(aie::KeyUp))
 		camPosY += 500.0f * deltaTime;
 
-	if (input->IsKeyDown(aie::INPUT_KEY_DOWN))
+	if (input->IsKeyDown(aie::KeyDown))
 		camPosY -= 500.0f * deltaTime;
 
-	if (input->IsKeyDown(aie::INPUT_KEY_LEFT))
+	if (input->IsKeyDown(aie::KeyLeft))
 		camPosX -= 500.0f * deltaTime;
 
-	if (input->IsKeyDown(aie::INPUT_KEY_RIGHT))
+	if (input->IsKeyDown(aie::KeyRight))
 		camPosX += 500.0f * deltaTime;
 
 	m_2dRenderer->SetCameraPos(camPosX, camPosY);
 
 	// exit the application
-	if (input->IsKeyDown(aie::INPUT_KEY_ESCAPE))
+	if (input->IsKeyDown(aie::KeyEscape))
 		Quit();
 }
 

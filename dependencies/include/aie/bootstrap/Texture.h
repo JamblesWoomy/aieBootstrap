@@ -6,51 +6,53 @@
 
 using std::string;
 
-namespace aie {
-
+namespace aie
+{
 	// a class for wrapping up an opengl texture image
-	class Texture {
+	class DLL Texture
+	{
 	public:
-
-		enum Format : unsigned int {
-			RED = 1,
+		enum EFormat : unsigned int
+		{
+			R = 1,
 			RG,
 			RGB,
 			RGBA
 		};
 
-		DLL Texture();
-		DLL Texture(const char* filename);
-		DLL Texture(unsigned int width, unsigned int height, Format format, unsigned char* pixels = nullptr);
-		DLL virtual ~Texture();
+	public:
+		Texture();
+		Texture(const char* filename);
+		Texture(unsigned int width, unsigned int height, EFormat format, const unsigned char* pixels = nullptr);
+		virtual ~Texture();
 
+	public:
 		// load a jpg, bmp, png or tga
-		DLL bool Load(const char* filename);
+		bool Load(const char* filename);
 
 		// creates a texture that can be filled in with pixels
-		DLL void Create(unsigned int width, unsigned int height, Format format, unsigned char* pixels = nullptr);
+		void Create(unsigned int width, unsigned int height, EFormat format, const unsigned char* pixels = nullptr);
 
 		// returns the filename or "none" if not loaded from a file
-		DLL const string& GetFilename() const { return m_filename; }
+		const char* GetFilename() const;
 
 		// binds the texture to the specified slot
-		DLL void Bind(unsigned int slot) const;
+		void Bind(unsigned int slot) const;
 
 		// returns the opengl texture handle
-		unsigned int GetHandle() const { return m_glHandle; }
+		unsigned int GetHandle() const;
 
-		unsigned int GetWidth() const { return m_width; }
-		unsigned int GetHeight() const { return m_height; }
-		unsigned int GetFormat() const { return m_format; }
-		const unsigned char* GetPixels() const { return m_loadedPixels; }
+		unsigned int GetWidth() const;
+		unsigned int GetHeight() const;
+		unsigned int GetFormat() const;
+		const unsigned char* GetPixels() const;
 
 	protected:
-
-		string		m_filename;
-		unsigned int	m_width;
-		unsigned int	m_height;
-		unsigned int	m_glHandle;
-		unsigned int	m_format;
+		char* m_filename;
+		unsigned int m_width;
+		unsigned int m_height;
+		unsigned int m_glHandle;
+		unsigned int m_format;
 		unsigned char* m_loadedPixels;
 	};
 
