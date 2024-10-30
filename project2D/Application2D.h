@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Application.h"
+#include <Application.h>
 #include "Renderer2D.h"
+#include <vector.h>
+#include <matrix.h>
 
 class Application2D : public aie::Application {
 public:

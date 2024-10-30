@@ -2,13 +2,24 @@
 #include "Texture.h"
 #include "Font.h"
 #include "Input.h"
+#include <vector.h>
+#include "matrix.h"
+#include "MatrixTransform.h"
+#include <Application.h>
+SpriteObject* m_tank;
+SpriteObject* m_turret;
 
-Application2D::Application2D() {
-
+Application2D::Application2D()
+{
+	m_2dRenderer = new aie::Renderer2D();
+	m_texture = new aie::Texture("./textures/numbered_grid.tga");
+	m_shipTexture = new aie::Texture("./textures/ship.png");
+	m_font = new aie::Font("./font/consolas.ttf", 32);
+	m_timer = 0;
 }
 
-Application2D::~Application2D() {
-
+Application2D::~Application2D()
+{
 }
 
 bool Application2D::startup() {
@@ -21,6 +32,12 @@ bool Application2D::startup() {
 	m_font = new aie::Font("./font/consolas.ttf", 32);
 	
 	m_timer = 0;
+	m_tank = new SpriteObject();
+	m_tank->load("./textures/TankBody.png");
+	m_tank->addChild(m_turret);
+	m_tank->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
+	m_turret = new SpriteObject();
+	m_turret->load("./textures/TankGun.png");
 
 	return true;
 }
@@ -71,6 +88,8 @@ void Application2D::draw() {
 
 	// begin drawing sprites
 	m_2dRenderer->begin();
+
+	m_tank->draw(m_2dRenderer);
 
 	// demonstrate animation
 	m_2dRenderer->setUVRect(int(m_timer) % 8 / 8.0f, 0, 1.f / 8, 1.f / 8);
