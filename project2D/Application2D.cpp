@@ -3,7 +3,7 @@
 #include "Font.h"
 #include "Input.h"
 #include <vector.h>
-#include "matrix.h"
+#include <matrix.h>
 #include "MatrixTransform.h"
 #include <Application.h>
 SpriteObject* m_tank;
@@ -52,13 +52,53 @@ void Application2D::shutdown() {
 
 void Application2D::update(float deltaTime) {
 
+	SpriteObject* m_turretBase;
 	m_timer += deltaTime;
+	m_tank->update(deltaTime);
 
 	// input example
 	aie::Input* input = aie::Input::getInstance();
 
+	// access input
+	//auto input = aie::Input::getInstance();
+
+	m_tank = new SpriteObject();
+	m_tank->load("./textures/tank.png");
+	m_turretBase = new SpriteObject(); //object for our turrent to rotate around
+	m_tank->addChild(m_turretBase);
+	m_turret = new SpriteObject();
+	m_turret->load("./textures/GunTurret.png");
+	m_turret->setPosition(0, 35); //transform so the turret rotates about it's pivot
+	m_turretBase->addChild(m_turret);
+	m_tank->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
+
+
+	// rotate tank, using deltaTime as the rotation speed
+	if (input->isKeyDown(aie::INPUT_KEY_A))
+		m_tank->rotate(deltaTime);
+	if (input->isKeyDown(aie::INPUT_KEY_D))
+		m_tank->rotate(-deltaTime);
+
+	// move tank, the 100 magic-number represents speed
+	if (input->isKeyDown(aie::INPUT_KEY_W)) {
+		auto facing = m_tank->getLocalTransform()[1] *
+			deltaTime * 100;
+		m_tank->translate(facing.x, facing.y);
+	}
+	if (input->isKeyDown(aie::INPUT_KEY_S)) {
+		auto facing = m_tank->getLocalTransform()[1] *
+			deltaTime * -100;
+		m_tank->translate(facing.x, facing.y);
+	}
+	// rotate turret
+	if (input->isKeyDown(aie::INPUT_KEY_Q))
+		m_turretBase->rotate(deltaTime);
+	if (input->isKeyDown(aie::INPUT_KEY_E))
+		m_turretBase->rotate(-deltaTime);
+
+
 	// Update the camera position using the arrow keys
-	float camPosX;
+	/*float camPosX;
 	float camPosY;
 	m_2dRenderer->getCameraPos(camPosX, camPosY);
 
@@ -74,7 +114,7 @@ void Application2D::update(float deltaTime) {
 	if (input->isKeyDown(aie::INPUT_KEY_RIGHT))
 		camPosX += 500.0f * deltaTime;
 
-	m_2dRenderer->setCameraPos(camPosX, camPosY);
+	m_2dRenderer->setCameraPos(camPosX, camPosY);*/
 
 	// exit the application
 	if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))

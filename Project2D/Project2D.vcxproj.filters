@@ -32,9 +32,6 @@
     <ClInclude Include="Application2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MatrixTransform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="framework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MatrixTransform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
