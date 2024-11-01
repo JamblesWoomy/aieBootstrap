@@ -4,6 +4,7 @@
 #include <vector>
 #include <cassert>
 #include "Application2D.h"
+#include "Renderer2D.h"
 #include <Texture.h>
 
 //using namespace Application2D;
@@ -145,4 +146,18 @@ public:
 	}
 protected:
 	aie::Texture* m_texture = nullptr;
+};
+
+class RealtimeMotionDemo
+{
+	float m_gravity = 10.0f;
+	float m_numberSteps = 3000.0f;
+	float m_stepSize = 0.5f;
+	float m_size = 25;
+	aie::Renderer2D* m_2dRenderer;
+	aie::Texture* m_texture;
+	void mathematicalModel(float theta, float velocity);
+	void numericalModel(float theta, float velocity);
+public:
+	void runModels(float theta, float velocity, aie::Renderer2D* m_2dRenderer, aie::Texture* m_texture);
 };

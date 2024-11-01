@@ -1,4 +1,5 @@
 #include "Application2D.h"
+#include "Renderer2D.h"
 #include "Texture.h"
 #include "Font.h"
 #include "Input.h"
@@ -9,6 +10,7 @@
 SpriteObject* m_tank;
 SpriteObject* m_turret;
 SpriteObject* m_bullet;
+aie::Texture* m_ball;
 
 Application2D::Application2D()
 {
@@ -34,10 +36,7 @@ bool Application2D::startup() {
 	m_turret->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
 	m_turret->setRotate(0);
 	m_tank->addChild(m_turret);
-	m_bullet = new SpriteObject();
-	m_bullet->load("./textures/bullet.png");
-   	m_bullet->setRotate(0);
-	m_turret->addChild(m_bullet);
+	m_ball = new aie::Texture("./textures/ball.png");
 	return true;
 }
 
@@ -54,6 +53,9 @@ void Application2D::update(float deltaTime) {
 	SpriteObject* m_turretBase{};
 	m_timer += deltaTime;
 	m_tank->update(deltaTime);
+
+	RealtimeMotionDemo realtimeDemo;
+	realtimeDemo.runModels(1.1f, 120, m_2dRenderer, m_ball);
 
 	// input example
 	aie::Input* input = aie::Input::getInstance();
@@ -86,9 +88,13 @@ void Application2D::update(float deltaTime) {
 		m_turret->rotate(-deltaTime);
 	
 	if (input->isKeyDown(aie::INPUT_KEY_SPACE)) {
-		auto facing = m_bullet->getLocalTransform()[1] *
-			deltaTime * 100;
-		//m_tank->removeChild(m_bullet);
+		m_bullet = new SpriteObject();
+		m_bullet->load("./textures/bullet.png");
+		m_bullet->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
+		m_bullet->setRotate(0);
+		m_turret->addChild(m_bullet);
+		m_bullet->update(deltaTime);
+		auto facing = m_bullet->getLocalTransform()[1] * deltaTime * 100;
 		m_bullet->translate(facing.x, facing.y);
 	}
 
@@ -130,7 +136,6 @@ void Application2D::draw() {
 	m_2dRenderer->begin();
 
 	m_tank->draw(m_2dRenderer);
-	m_bullet->draw(m_2dRenderer);
 
 	/*// demonstrate animation
 	m_2dRenderer->setUVRect(int(m_timer) % 8 / 8.0f, 0, 1.f / 8, 1.f / 8);
@@ -163,4 +168,24 @@ void Application2D::draw() {
 	
 	// done drawing sprites
 	m_2dRenderer->end();
+}
+
+
+void RealtimeMotionDemo::runModels(float theta, float velocity, aie::Renderer2D* renderer, aie::Texture*texture)
+{
+	m_2dRenderer = renderer;
+	m_texture = texture;
+	//numericalModel(theta, velocity);
+	mathematicalModel(theta, velocity);
+}
+
+void RealtimeMotionDemo::mathematicalModel(float theta, float speed)
+{
+	for (float t = 0; t < m_numberSteps; t += m_stepSize)
+	{
+		float x = t * cos(theta) * speed;
+		float y = t * sin(theta) * speed - .5 * m_gravity * pow(t, 2);
+		m_2dRenderer->setRenderColour(255, 255, 255, 1);
+		m_2dRenderer->drawSprite(m_texture, x, y, m_size, m_size);
+	}
 }
