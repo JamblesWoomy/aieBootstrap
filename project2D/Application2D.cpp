@@ -8,6 +8,7 @@
 #include <Application.h>
 SpriteObject* m_tank;
 SpriteObject* m_turret;
+SpriteObject* m_bullet;
 
 Application2D::Application2D()
 {
@@ -33,6 +34,9 @@ bool Application2D::startup() {
 	m_turret->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
 	m_turret->setRotate(0);
 	m_tank->addChild(m_turret);
+	m_bullet = new SpriteObject();
+	m_bullet->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
+	m_bullet->setRotate(0);
 	return true;
 }
 
@@ -79,6 +83,11 @@ void Application2D::update(float deltaTime) {
 		m_turret->rotate(deltaTime);
 	if (input->isKeyDown(aie::INPUT_KEY_E))
 		m_turret->rotate(-deltaTime);
+	if (input->isKeyDown(aie::INPUT_KEY_SPACE))
+		m_bullet->load("./textures/bullet.png");
+	//	m_bullet->load("./textures/bullet.png");
+	//	m_bullet->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
+	//	m_bullet->setRotate(0);
 
 
 	// Update the camera position using the arrow keys
@@ -114,6 +123,7 @@ void Application2D::draw() {
 	m_2dRenderer->begin();
 
 	m_tank->draw(m_2dRenderer);
+	m_bullet->draw(m_2dRenderer);
 
 	/*// demonstrate animation
 	m_2dRenderer->setUVRect(int(m_timer) % 8 / 8.0f, 0, 1.f / 8, 1.f / 8);
