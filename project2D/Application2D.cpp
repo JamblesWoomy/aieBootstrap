@@ -35,8 +35,10 @@ bool Application2D::startup() {
 	m_turret->setRotate(0);
 	m_tank->addChild(m_turret);
 	m_bullet = new SpriteObject();
+	m_bullet->load("./textures/bullet.png");
 	m_bullet->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
 	m_bullet->setRotate(0);
+	m_tank->addChild(m_bullet);
 	return true;
 }
 
@@ -83,8 +85,13 @@ void Application2D::update(float deltaTime) {
 		m_turret->rotate(deltaTime);
 	if (input->isKeyDown(aie::INPUT_KEY_E))
 		m_turret->rotate(-deltaTime);
-	if (input->isKeyDown(aie::INPUT_KEY_SPACE))
-		m_bullet->load("./textures/bullet.png");
+	
+	if (input->isKeyDown(aie::INPUT_KEY_SPACE)) {
+		
+		auto facing = m_bullet->getLocalTransform()[1] *
+			deltaTime * 100;
+		m_bullet->translate(facing.x, facing.y);
+	}
 	//	m_bullet->load("./textures/bullet.png");
 	//	m_bullet->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
 	//	m_bullet->setRotate(0);
