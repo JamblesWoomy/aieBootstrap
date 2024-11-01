@@ -138,6 +138,8 @@ public:
 	{
 		if (m_texture != nullptr)
 		{
+			//m_globalTransform[0][0] = 0.5;
+			//m_globalTransform[1][1] = 0.5;
 			renderer->drawSpriteTransformed3x3(m_texture, (float*)&m_globalTransform);
 		}
 	}

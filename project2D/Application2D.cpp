@@ -11,11 +11,7 @@ SpriteObject* m_turret;
 
 Application2D::Application2D()
 {
-	m_2dRenderer = new aie::Renderer2D();
-	m_texture = new aie::Texture("./textures/numbered_grid.tga");
-	m_shipTexture = new aie::Texture("./textures/ship.png");
-	m_font = new aie::Font("./font/consolas.ttf", 32);
-	m_timer = 0;
+	
 }
 
 Application2D::~Application2D()
@@ -23,22 +19,20 @@ Application2D::~Application2D()
 }
 
 bool Application2D::startup() {
-	
 	m_2dRenderer = new aie::Renderer2D();
-
 	m_texture = new aie::Texture("./textures/numbered_grid.tga");
 	m_shipTexture = new aie::Texture("./textures/ship.png");
-
 	m_font = new aie::Font("./font/consolas.ttf", 32);
-	
 	m_timer = 0;
 	m_tank = new SpriteObject();
 	m_tank->load("./textures/TankBody.png");
-	m_tank->addChild(m_turret);
 	m_tank->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
+	m_tank->setRotate(0);
 	m_turret = new SpriteObject();
 	m_turret->load("./textures/TankGun.png");
-
+	m_turret->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
+	m_turret->setRotate(0);
+	m_tank->addChild(m_turret);
 	return true;
 }
 
@@ -52,7 +46,7 @@ void Application2D::shutdown() {
 
 void Application2D::update(float deltaTime) {
 
-	SpriteObject* m_turretBase;
+	SpriteObject* m_turretBase{};
 	m_timer += deltaTime;
 	m_tank->update(deltaTime);
 
@@ -61,16 +55,6 @@ void Application2D::update(float deltaTime) {
 
 	// access input
 	//auto input = aie::Input::getInstance();
-
-	m_tank = new SpriteObject();
-	m_tank->load("./textures/tank.png");
-	m_turretBase = new SpriteObject(); //object for our turrent to rotate around
-	m_tank->addChild(m_turretBase);
-	m_turret = new SpriteObject();
-	m_turret->load("./textures/GunTurret.png");
-	m_turret->setPosition(0, 35); //transform so the turret rotates about it's pivot
-	m_turretBase->addChild(m_turret);
-	m_tank->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
 
 
 	// rotate tank, using deltaTime as the rotation speed
@@ -92,9 +76,9 @@ void Application2D::update(float deltaTime) {
 	}
 	// rotate turret
 	if (input->isKeyDown(aie::INPUT_KEY_Q))
-		m_turretBase->rotate(deltaTime);
+		m_turret->rotate(deltaTime);
 	if (input->isKeyDown(aie::INPUT_KEY_E))
-		m_turretBase->rotate(-deltaTime);
+		m_turret->rotate(-deltaTime);
 
 
 	// Update the camera position using the arrow keys
@@ -131,7 +115,7 @@ void Application2D::draw() {
 
 	m_tank->draw(m_2dRenderer);
 
-	// demonstrate animation
+	/*// demonstrate animation
 	m_2dRenderer->setUVRect(int(m_timer) % 8 / 8.0f, 0, 1.f / 8, 1.f / 8);
 	m_2dRenderer->drawSprite(m_texture, 200, 200, 100, 100);
 
@@ -153,13 +137,13 @@ void Application2D::draw() {
 	// draw a slightly rotated sprite with no texture, coloured yellow
 	m_2dRenderer->setRenderColour(1, 1, 0, 1);
 	m_2dRenderer->drawSprite(nullptr, 400, 400, 50, 50, 3.14159f * 0.25f, 1);
-	
+	*/
 	// output some text, uses the last used colour
 	char fps[32];
 	sprintf_s(fps, 32, "FPS: %i", getFPS());
 	m_2dRenderer->drawText(m_font, fps, 0, 720 - 32);
 	m_2dRenderer->drawText(m_font, "Press ESC to quit!", 0, 720 - 64);
-
+	
 	// done drawing sprites
 	m_2dRenderer->end();
 }
