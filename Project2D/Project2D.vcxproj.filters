@@ -44,5 +44,8 @@
     <ClInclude Include="MatrixTransform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BoundingVolumes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

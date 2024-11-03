@@ -4,6 +4,8 @@
 #include "Renderer2D.h"
 #include <vector.h>
 #include <matrix.h>
+#include "Input.h"
+
 
 class Application2D : public aie::Application {
 public:
@@ -16,6 +18,7 @@ public:
 
 	virtual void update(float deltaTime);
 	virtual void runBullet(float deltaTime);
+	virtual void movePlayer(float deltaTime, aie::Input* input);
 	virtual void draw();
 
 protected:

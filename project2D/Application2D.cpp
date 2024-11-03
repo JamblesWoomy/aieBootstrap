@@ -37,11 +37,11 @@ bool Application2D::startup() {
 	m_turret->setRotate(0);
 	m_tank->addChild(m_turret);
 	m_ball = new aie::Texture("./textures/ball.png");
-	m_bullet = new SpriteObject();
-	m_bullet->load("./textures/bullet.png");
-	m_turret->addChild(m_bullet);
-	m_bullet->setPosition(getWindowWidth() / 1.f, getWindowHeight() / 1.f);
-	m_bullet->setRotate(0);
+	//m_bullet = new SpriteObject();
+	//m_bullet->load("./textures/bullet.png");
+	//m_turret->addChild(m_bullet);
+	//m_bullet->setPosition(getWindowWidth() / 1.f, getWindowHeight() / 1.f);
+	//m_bullet->setRotate(0);
 	return true;
 }
 
@@ -60,17 +60,23 @@ void Application2D::update(float deltaTime) {
 	m_tank->update(deltaTime);
 	m_bullet->update(deltaTime);
 	runBullet(deltaTime);
+	aie::Input* input = aie::Input::getInstance();
+	//movePlayer(deltaTime, input);
 
 	RealtimeMotionDemo realtimeDemo;
 	realtimeDemo.runModels(1.1f, 120, m_2dRenderer, m_ball);
 
-	// input example
-	aie::Input* input = aie::Input::getInstance();
+	
 
 	// access input
 	//auto input = aie::Input::getInstance();
 
 
+	
+}
+
+void Application2D::movePlayer(float deltaTime, aie::Input* input) {
+	// input example
 	// rotate tank, using deltaTime as the rotation speed
 	if (input->isKeyDown(aie::INPUT_KEY_A))
 		m_tank->rotate(deltaTime);
@@ -93,12 +99,16 @@ void Application2D::update(float deltaTime) {
 		m_turret->rotate(deltaTime);
 	if (input->isKeyDown(aie::INPUT_KEY_E))
 		m_turret->rotate(-deltaTime);
-	
+
 	if (input->isKeyDown(aie::INPUT_KEY_SPACE)) {
-		m_bullet = new SpriteObject();
+		//bulletAmount++;
+		auto facing = m_bullet->getLocalTransform()[1] * deltaTime * 100;
+		m_bullet->translate(facing.x, facing.y);
+		m_bullet = nullptr;
+		m_bullet = (m_bullet = new SpriteObject());
 		m_bullet->load("./textures/bullet.png");
 		m_turret->addChild(m_bullet);
-		m_bullet->setPosition(getWindowWidth() / 1.f, getWindowHeight() / 1.f);
+		//m_bullet->setPosition(getWindowWidth() / 1.f, getWindowHeight() / 1.f);
 		m_bullet->setRotate(0);
 	}
 
@@ -127,14 +137,16 @@ void Application2D::update(float deltaTime) {
 	m_2dRenderer->setCameraPos(camPosX, camPosY);*/
 
 	// exit the application
-	if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
-		quit();
+	//if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
+		//quit();
 }
 
 void Application2D::runBullet(float deltaTime)
 {
+	//for (int i = 0; i > bulletAmount; i++) {
 	auto facing = m_bullet->getLocalTransform()[1] * deltaTime * 100;
 	m_bullet->translate(facing.x, facing.y);
+	//}
 }
 
 void Application2D::draw() {

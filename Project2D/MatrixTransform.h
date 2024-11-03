@@ -161,15 +161,3 @@ class RealtimeMotionDemo
 public:
 	void runModels(float theta, float velocity, aie::Renderer2D* m_2dRenderer, aie::Texture* m_texture);
 };
-
-/*class AABB {
-public:
-	
-
-	AABB() {}
-	AABB(const Vector2& min, const Vector2& max) : min(min), max(max) {}
-	Vector2 min, max;
-	float clamp(float t, float a, float b) {
-		return max(a, min(b, t));
-	}
-};*/
