@@ -15,6 +15,7 @@ public:
 	virtual void shutdown();
 
 	virtual void update(float deltaTime);
+	virtual void runBullet(float deltaTime);
 	virtual void draw();
 
 protected:

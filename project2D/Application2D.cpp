@@ -37,6 +37,11 @@ bool Application2D::startup() {
 	m_turret->setRotate(0);
 	m_tank->addChild(m_turret);
 	m_ball = new aie::Texture("./textures/ball.png");
+	m_bullet = new SpriteObject();
+	m_bullet->load("./textures/bullet.png");
+	m_turret->addChild(m_bullet);
+	m_bullet->setPosition(getWindowWidth() / 1.f, getWindowHeight() / 1.f);
+	m_bullet->setRotate(0);
 	return true;
 }
 
@@ -53,6 +58,8 @@ void Application2D::update(float deltaTime) {
 	SpriteObject* m_turretBase{};
 	m_timer += deltaTime;
 	m_tank->update(deltaTime);
+	m_bullet->update(deltaTime);
+	runBullet(deltaTime);
 
 	RealtimeMotionDemo realtimeDemo;
 	realtimeDemo.runModels(1.1f, 120, m_2dRenderer, m_ball);
@@ -90,12 +97,9 @@ void Application2D::update(float deltaTime) {
 	if (input->isKeyDown(aie::INPUT_KEY_SPACE)) {
 		m_bullet = new SpriteObject();
 		m_bullet->load("./textures/bullet.png");
-		m_bullet->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
-		m_bullet->setRotate(0);
 		m_turret->addChild(m_bullet);
-		m_bullet->update(deltaTime);
-		auto facing = m_bullet->getLocalTransform()[1] * deltaTime * 100;
-		m_bullet->translate(facing.x, facing.y);
+		m_bullet->setPosition(getWindowWidth() / 1.f, getWindowHeight() / 1.f);
+		m_bullet->setRotate(0);
 	}
 
 	//	m_bullet->load("./textures/bullet.png");
@@ -125,6 +129,12 @@ void Application2D::update(float deltaTime) {
 	// exit the application
 	if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
 		quit();
+}
+
+void Application2D::runBullet(float deltaTime)
+{
+	auto facing = m_bullet->getLocalTransform()[1] * deltaTime * 100;
+	m_bullet->translate(facing.x, facing.y);
 }
 
 void Application2D::draw() {
@@ -183,9 +193,9 @@ void RealtimeMotionDemo::mathematicalModel(float theta, float speed)
 {
 	for (float t = 0; t < m_numberSteps; t += m_stepSize)
 	{
-		float x = t * cos(theta) * speed;
-		float y = t * sin(theta) * speed - .5 * m_gravity * pow(t, 2);
-		m_2dRenderer->setRenderColour(255, 255, 255, 1);
-		m_2dRenderer->drawSprite(m_texture, x, y, m_size, m_size);
+		//float x = t * cos(theta) * speed;
+		//float y = t * sin(theta) * speed - .5 * m_gravity * pow(t, 2);
+		//m_2dRenderer->setRenderColour(255, 255, 255, 1);
+		//m_2dRenderer->drawSprite(m_texture, x, y, m_size, m_size);
 	}
 }
