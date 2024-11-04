@@ -11,7 +11,6 @@
 #include <Application.h>
 SpriteObject* m_tank;
 SpriteObject* m_turret;
-AABB* collisionBox;
 std::vector<SpriteObject*> m_bullet;
 aie::Texture* m_ball;
 
@@ -40,7 +39,7 @@ bool Application2D::startup() {
 	m_turret->setRotate(0);
 	m_tank->addChild(m_turret);
 	m_ball = new aie::Texture("./textures/ball.png");
-	collisionBox->fit((getWindowWidth() / 2.f, getWindowHeight() / 2.f), unsigned int count)
+	//m_tank->fit(m_tank->getGlobalTransform()[2], 4);
 	//m_bullet = new SpriteObject();
 	//for (SpriteObject* i : m_bullet) {
 	//m_bullet.push_back(i = new SpriteObject());
@@ -163,7 +162,7 @@ void Application2D::draw() {
 	for (SpriteObject* i : m_bullet) {
 		i->draw(m_2dRenderer);
 	}
-	collisionBox->debugDraw(m_2dRenderer);
+	m_tank->m_collisionBox->debugDraw(m_2dRenderer);
 
 	/*// demonstrate animation
 	m_2dRenderer->setUVRect(int(m_timer) % 8 / 8.0f, 0, 1.f / 8, 1.f / 8);

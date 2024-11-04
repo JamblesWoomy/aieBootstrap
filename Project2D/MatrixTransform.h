@@ -6,6 +6,8 @@
 #include "Application2D.h"
 #include "Renderer2D.h"
 #include <Texture.h>
+#include "BoundingVolumes.h"
+
 
 //using namespace Application2D;
 
@@ -107,6 +109,8 @@ class SceneObject {
 
 		Matrix3 m_localTransform;
 		Matrix3 m_globalTransform;
+
+
 };
 
 class my2DApp : public aie::Application {
@@ -134,6 +138,7 @@ public:
 		m_texture = new aie::Texture(filename);
 		return m_texture != nullptr;
 	}
+		//AABB* m_collisionBox;
 
 	virtual void SpriteObject::onDraw(aie::Renderer2D* renderer)
 	{
@@ -141,6 +146,10 @@ public:
 		{
 			//m_globalTransform[0][0] = 0.5;
 			//m_globalTransform[1][1] = 0.5;
+			//float width = m_texture->getWidth();
+			//float height = m_texture->getHeight();
+			//Vector3 pos = getGlobalTransform().zAxis;
+			//m_collisionBox = new AABB({ pos.x + width / 2, pos.y + height / 2}, { pos.x - width / 2, pos.y - height / 2});
 			renderer->drawSpriteTransformed3x3(m_texture, (float*)&m_globalTransform);
 		}
 	}
