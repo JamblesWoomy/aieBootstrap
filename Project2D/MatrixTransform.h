@@ -11,7 +11,7 @@
 
 //using namespace Application2D;
 
-class SceneObject {
+class SceneObject { //holds all functionality for scene objects, including matrix hierarchies
 	public:
 		SceneObject() {}
 		SceneObject* getParent() const { return m_parent; }
@@ -127,7 +127,7 @@ protected:
 	aie::Renderer2D* m_2dRenderer;
 };
 
-class SpriteObject : public SceneObject {
+class SpriteObject : public SceneObject {// holds functionality for rendering and drawing objects with textures
 public:
 	SpriteObject() {}
 	SpriteObject(const char* filename) { load(filename); }
@@ -138,35 +138,19 @@ public:
 		m_texture = new aie::Texture(filename);
 		return m_texture != nullptr;
 	}
-		//AABB* m_collisionBox;
+		AABB* m_collisionBox = nullptr;
 
-	virtual void SpriteObject::onDraw(aie::Renderer2D* renderer)
+	virtual void SpriteObject::onDraw(aie::Renderer2D* renderer)// create a collision box for all objects with a sprite
 	{
 		if (m_texture != nullptr)
 		{
-			//m_globalTransform[0][0] = 0.5;
-			//m_globalTransform[1][1] = 0.5;
-			//float width = m_texture->getWidth();
-			//float height = m_texture->getHeight();
-			//Vector3 pos = getGlobalTransform().zAxis;
-			//m_collisionBox = new AABB({ pos.x + width / 2, pos.y + height / 2}, { pos.x - width / 2, pos.y - height / 2});
+			float width = m_texture->getWidth();
+			float height = m_texture->getHeight();
+			Vector3 pos = getGlobalTransform().zAxis;
+			m_collisionBox = new AABB({ pos.x + width / 2, pos.y + height / 2}, { pos.x - width / 2, pos.y - height / 2});
 			renderer->drawSpriteTransformed3x3(m_texture, (float*)&m_globalTransform);
 		}
 	}
 protected:
 	aie::Texture* m_texture = nullptr;
-};
-
-class RealtimeMotionDemo
-{
-	float m_gravity = 10.0f;
-	float m_numberSteps = 3000.0f;
-	float m_stepSize = 0.5f;
-	float m_size = 25;
-	aie::Renderer2D* m_2dRenderer;
-	aie::Texture* m_texture;
-	void mathematicalModel(float theta, float velocity);
-	void numericalModel(float theta, float velocity);
-public:
-	void runModels(float theta, float velocity, aie::Renderer2D* m_2dRenderer, aie::Texture* m_texture);
 };

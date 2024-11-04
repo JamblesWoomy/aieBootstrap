@@ -11,8 +11,10 @@
 #include <Application.h>
 SpriteObject* m_tank;
 SpriteObject* m_turret;
+AABB* m_bulletBox;
 std::vector<SpriteObject*> m_bullet;
 aie::Texture* m_ball;
+bool slowMode = false;
 
 Application2D::Application2D()
 {
@@ -23,7 +25,7 @@ Application2D::~Application2D()
 {
 }
 
-bool Application2D::startup() {
+bool Application2D::startup() {//renders all objects
 	m_2dRenderer = new aie::Renderer2D();
 	m_texture = new aie::Texture("./textures/numbered_grid.tga");
 	m_shipTexture = new aie::Texture("./textures/ship.png");
@@ -31,23 +33,19 @@ bool Application2D::startup() {
 	m_timer = 0;
 	m_tank = new SpriteObject();
 	m_tank->load("./textures/TankBody.png");
-	m_tank->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
+	m_tank->setPosition(getWindowWidth() / 1.f, getWindowHeight() / 1.f);
 	m_tank->setRotate(0);
 	m_turret = new SpriteObject();
 	m_turret->load("./textures/TankGun.png");
 	m_turret->setPosition(getWindowWidth() / 2.f, getWindowHeight() / 2.f);
 	m_turret->setRotate(0);
 	m_tank->addChild(m_turret);
-	m_ball = new aie::Texture("./textures/ball.png");
-	//m_tank->fit(m_tank->getGlobalTransform()[2], 4);
-	//m_bullet = new SpriteObject();
-	//for (SpriteObject* i : m_bullet) {
-	//m_bullet.push_back(i = new SpriteObject());
-	//}
+	Vector2 ScreenCorners[4] = { { 0,0 }, { 0, (float)getWindowHeight() }, {(float)getWindowWidth(), (float)getWindowHeight()}, {(float)getWindowWidth(), 0 } };
+	m_bulletBox = new AABB({ ScreenCorners[0].x, ScreenCorners[0].y }, { ScreenCorners[1].x + 20, ScreenCorners[1].y });
 	return true;
 }
 
-void Application2D::shutdown() {
+void Application2D::shutdown() {//exit program
 	
 	delete m_font;
 	delete m_texture;
@@ -55,7 +53,7 @@ void Application2D::shutdown() {
 	delete m_2dRenderer;
 }
 
-void Application2D::update(float deltaTime) {
+void Application2D::update(float deltaTime) {//called per frame, calls all movement functions
 
 	SpriteObject* m_turretBase{};
 	m_timer += deltaTime;
@@ -66,20 +64,9 @@ void Application2D::update(float deltaTime) {
 	runBullet(deltaTime);
 	aie::Input* input = aie::Input::getInstance();
 	movePlayer(deltaTime, input);
-
-	RealtimeMotionDemo realtimeDemo;
-	realtimeDemo.runModels(1.1f, 120, m_2dRenderer, m_ball);
-
-	
-
-	// access input
-	//auto input = aie::Input::getInstance();
-
-
-	
 }
 
-void Application2D::movePlayer(float deltaTime, aie::Input* input) {
+void Application2D::movePlayer(float deltaTime, aie::Input* input) {//handles all player movment
 	// input example
 	// rotate tank, using deltaTime as the rotation speed
 	if (input->isKeyDown(aie::INPUT_KEY_A))
@@ -88,23 +75,44 @@ void Application2D::movePlayer(float deltaTime, aie::Input* input) {
 		m_tank->rotate(-deltaTime);
 
 	// move tank, the 100 magic-number represents speed
-	if (input->isKeyDown(aie::INPUT_KEY_W)) {
-		auto facing = m_tank->getLocalTransform()[1] *
-			deltaTime * 100;
-		m_tank->translate(facing.x, facing.y);
+	if (input->isKeyDown(aie::INPUT_KEY_W)) {//forward movement, includes increased speed
+		if (slowMode)
+		{
+			auto facing = m_tank->getLocalTransform()[1] * deltaTime * 200;
+			m_tank->translate(facing.x, facing.y);
+		}
+		else {
+			auto facing = m_tank->getLocalTransform()[1] * deltaTime * 100;
+			m_tank->translate(facing.x, facing.y);
+		}
 	}
-	if (input->isKeyDown(aie::INPUT_KEY_S)) {
-		auto facing = m_tank->getLocalTransform()[1] *
-			deltaTime * -100;
-		m_tank->translate(facing.x, facing.y);
+
+	if (input->isKeyDown(aie::INPUT_KEY_S)) {//backwards movement, includes increased speed
+		if (slowMode)
+		{
+			auto facing = m_tank->getLocalTransform()[1] * deltaTime * -200;
+			m_tank->translate(facing.x, facing.y);
+		}
+		else {
+			auto facing = m_tank->getLocalTransform()[1] * deltaTime * -100;
+			m_tank->translate(facing.x, facing.y);
+		}
 	}
+
+	if (input->isKeyDown(aie::INPUT_KEY_Z)) {//switches on mode where movement speed is increased
+		slowMode = true;
+	}
+	if (input->isKeyUp(aie::INPUT_KEY_Z)) {//switches off once sprint key is released
+		slowMode = false;
+	}
+
 	// rotate turret
-	if (input->isKeyDown(aie::INPUT_KEY_Q))
+	if (input->isKeyDown(aie::INPUT_KEY_Q))//rotate the turret child
 		m_turret->rotate(deltaTime);
-	if (input->isKeyDown(aie::INPUT_KEY_E))
+	if (input->isKeyDown(aie::INPUT_KEY_E))// accounts for other direction
 		m_turret->rotate(-deltaTime);
 
-	if (input->isKeyDown(aie::INPUT_KEY_SPACE)) {
+	if (input->isKeyDown(aie::INPUT_KEY_SPACE)) {//creates the bullets
 		SpriteObject* m_bulletInstance = new SpriteObject();
 		m_bulletInstance->load("./textures/bullet.png");
 		m_bulletInstance->setPosition(m_turret->getGlobalTransform()[2].x, m_turret->getGlobalTransform()[2].y);
@@ -142,15 +150,19 @@ void Application2D::movePlayer(float deltaTime, aie::Input* input) {
 		//quit();
 }
 
-void Application2D::runBullet(float deltaTime)
+void Application2D::runBullet(float deltaTime)//holds movement and collision functionality for all bullets
 {
 	for (SpriteObject* i : m_bullet) {
 		auto facing = i->getLocalTransform()[1] * deltaTime * 100;
 		i->translate(facing.x, facing.y);
+		if (i->m_collisionBox->overlaps(*m_bulletBox)) {
+			m_turret->removeChild(i);
+			i->~SpriteObject(); 
+		}
 	}
 }
 
-void Application2D::draw() {
+void Application2D::draw() {// render all sprites and scene objects
 
 	// wipe the screen to the background colour
 	clearScreen();
@@ -163,56 +175,14 @@ void Application2D::draw() {
 		i->draw(m_2dRenderer);
 	}
 	m_tank->m_collisionBox->debugDraw(m_2dRenderer);
+	m_bulletBox->debugDraw(m_2dRenderer);
 
-	/*// demonstrate animation
-	m_2dRenderer->setUVRect(int(m_timer) % 8 / 8.0f, 0, 1.f / 8, 1.f / 8);
-	m_2dRenderer->drawSprite(m_texture, 200, 200, 100, 100);
-
-	// demonstrate spinning sprite
-	m_2dRenderer->setUVRect(0,0,1,1);
-	m_2dRenderer->drawSprite(m_shipTexture, 600, 400, 0, 0, m_timer, 1);
-
-	// draw a thin line
-	m_2dRenderer->drawLine(300, 300, 600, 400, 2, 1);
-
-	// draw a moving purple circle
-	m_2dRenderer->setRenderColour(1, 0, 1, 1);
-	m_2dRenderer->drawCircle(sin(m_timer) * 100 + 600, 150, 50);
-
-	// draw a rotating red box
-	m_2dRenderer->setRenderColour(1, 0, 0, 1);
-	m_2dRenderer->drawBox(600, 500, 60, 20, m_timer);
-
-	// draw a slightly rotated sprite with no texture, coloured yellow
-	m_2dRenderer->setRenderColour(1, 1, 0, 1);
-	m_2dRenderer->drawSprite(nullptr, 400, 400, 50, 50, 3.14159f * 0.25f, 1);
-	*/
 	// output some text, uses the last used colour
 	char fps[32];
 	sprintf_s(fps, 32, "FPS: %i", getFPS());
 	m_2dRenderer->drawText(m_font, fps, 0, 720 - 32);
-	m_2dRenderer->drawText(m_font, "Press ESC to quit!", 0, 720 - 64);
+	m_2dRenderer->drawText(m_font, "WASD - Move, Q & E - Move Cannon, SPACE - Shoot, Z - Sprint", 0, 720 - 64);
 	
 	// done drawing sprites
 	m_2dRenderer->end();
-}
-
-
-void RealtimeMotionDemo::runModels(float theta, float velocity, aie::Renderer2D* renderer, aie::Texture*texture)
-{
-	m_2dRenderer = renderer;
-	m_texture = texture;
-	//numericalModel(theta, velocity);
-	mathematicalModel(theta, velocity);
-}
-
-void RealtimeMotionDemo::mathematicalModel(float theta, float speed)
-{
-	for (float t = 0; t < m_numberSteps; t += m_stepSize)
-	{
-		//float x = t * cos(theta) * speed;
-		//float y = t * sin(theta) * speed - .5 * m_gravity * pow(t, 2);
-		//m_2dRenderer->setRenderColour(255, 255, 255, 1);
-		//m_2dRenderer->drawSprite(m_texture, x, y, m_size, m_size);
-	}
 }
