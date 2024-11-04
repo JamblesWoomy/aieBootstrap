@@ -4,12 +4,15 @@
 #include "Font.h"
 #include "Input.h"
 #include <vector.h>
+#include <vector>
 #include <matrix.h>
 #include "MatrixTransform.h"
+#include "BoundingVolumes.h"
 #include <Application.h>
 SpriteObject* m_tank;
 SpriteObject* m_turret;
-SpriteObject* m_bullet;
+AABB* collisionBox;
+std::vector<SpriteObject*> m_bullet;
 aie::Texture* m_ball;
 
 Application2D::Application2D()
@@ -37,11 +40,11 @@ bool Application2D::startup() {
 	m_turret->setRotate(0);
 	m_tank->addChild(m_turret);
 	m_ball = new aie::Texture("./textures/ball.png");
+	collisionBox->fit((getWindowWidth() / 2.f, getWindowHeight() / 2.f), unsigned int count)
 	//m_bullet = new SpriteObject();
-	//m_bullet->load("./textures/bullet.png");
-	//m_turret->addChild(m_bullet);
-	//m_bullet->setPosition(getWindowWidth() / 1.f, getWindowHeight() / 1.f);
-	//m_bullet->setRotate(0);
+	//for (SpriteObject* i : m_bullet) {
+	//m_bullet.push_back(i = new SpriteObject());
+	//}
 	return true;
 }
 
@@ -58,10 +61,12 @@ void Application2D::update(float deltaTime) {
 	SpriteObject* m_turretBase{};
 	m_timer += deltaTime;
 	m_tank->update(deltaTime);
-	m_bullet->update(deltaTime);
+	for (SpriteObject* i : m_bullet) {
+		i->update(deltaTime);
+	}
 	runBullet(deltaTime);
 	aie::Input* input = aie::Input::getInstance();
-	//movePlayer(deltaTime, input);
+	movePlayer(deltaTime, input);
 
 	RealtimeMotionDemo realtimeDemo;
 	realtimeDemo.runModels(1.1f, 120, m_2dRenderer, m_ball);
@@ -101,15 +106,12 @@ void Application2D::movePlayer(float deltaTime, aie::Input* input) {
 		m_turret->rotate(-deltaTime);
 
 	if (input->isKeyDown(aie::INPUT_KEY_SPACE)) {
-		//bulletAmount++;
-		auto facing = m_bullet->getLocalTransform()[1] * deltaTime * 100;
-		m_bullet->translate(facing.x, facing.y);
-		m_bullet = nullptr;
-		m_bullet = (m_bullet = new SpriteObject());
-		m_bullet->load("./textures/bullet.png");
-		m_turret->addChild(m_bullet);
-		//m_bullet->setPosition(getWindowWidth() / 1.f, getWindowHeight() / 1.f);
-		m_bullet->setRotate(0);
+		SpriteObject* m_bulletInstance = new SpriteObject();
+		m_bulletInstance->load("./textures/bullet.png");
+		m_bulletInstance->setPosition(m_turret->getGlobalTransform()[2].x, m_turret->getGlobalTransform()[2].y);
+		m_bulletInstance->setRotate(0);
+		m_bullet.push_back(m_bulletInstance);
+		m_turret->addChild(m_bulletInstance);
 	}
 
 	//	m_bullet->load("./textures/bullet.png");
@@ -143,10 +145,10 @@ void Application2D::movePlayer(float deltaTime, aie::Input* input) {
 
 void Application2D::runBullet(float deltaTime)
 {
-	//for (int i = 0; i > bulletAmount; i++) {
-	auto facing = m_bullet->getLocalTransform()[1] * deltaTime * 100;
-	m_bullet->translate(facing.x, facing.y);
-	//}
+	for (SpriteObject* i : m_bullet) {
+		auto facing = i->getLocalTransform()[1] * deltaTime * 100;
+		i->translate(facing.x, facing.y);
+	}
 }
 
 void Application2D::draw() {
@@ -158,6 +160,10 @@ void Application2D::draw() {
 	m_2dRenderer->begin();
 
 	m_tank->draw(m_2dRenderer);
+	for (SpriteObject* i : m_bullet) {
+		i->draw(m_2dRenderer);
+	}
+	collisionBox->debugDraw(m_2dRenderer);
 
 	/*// demonstrate animation
 	m_2dRenderer->setUVRect(int(m_timer) % 8 / 8.0f, 0, 1.f / 8, 1.f / 8);

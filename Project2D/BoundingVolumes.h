@@ -11,40 +11,40 @@ public:
 	AABB(const Vector2& min, const Vector2& max) : m_min(min), m_max(max) {};
 	Vector2 m_min, m_max;
 	Vector2 AABB::center() const {// find the center position of the AABB
-		return (min + max) * 0.5f;
+		return (m_min + m_max) * 0.5f;
 	}
 	Vector2 AABB::extents() const {//calculate half extents of AABB
-		return { abs(max.x - min.x) * 0.5f, abs(max.y - min.y) * 0.5f };
+		return { abs(m_min.x - m_min.x) * 0.5f, abs(m_max.y - m_max.y) * 0.5f };
 	}
 
 	std::vector<Vector2> AABB::corners() const { //return each corner of the AABB box
 		std::vector<Vector2> corners(4);
-		corners[0] = min;
-		corners[1] = { min.x, max.y };
-		corners[2] = max;
-		corners[3] = { max.x, min.y };
+		corners[0] = m_min;
+		corners[1] = { m_min.x, m_max.y };
+		corners[2] = m_max;
+		corners[3] = { m_max.x, m_min.y };
 	}
 
 	void AABB::debugDraw(aie::Renderer2D* renderer)//draw a debug box for testing collisions
 	{
-		renderer->drawLine(min.x, min.y, max.x, min.y);
-		renderer->drawLine(min.x, min.y, max.x, min.y);
-		renderer->drawLine(min.x, min.y, max.x, min.y);
-		renderer->drawLine(min.x, min.y, max.x, min.y);
+		renderer->drawLine(m_min.x, m_min.y, m_max.x, m_min.y);
+		renderer->drawLine(m_max.x, m_min.y, m_max.x, m_max.y);
+		renderer->drawLine(m_max.x, m_max.y, m_min.x, m_max.y);
+		renderer->drawLine(m_min.x, m_max.y, m_min.x, m_min.y);
 	}
 
-	void AABB::fit(const std::vector<Vector2>& points) {//fit an AABB around a bounding region given points
-		min = { FLT_MAX, FLT_MAX };
-		max = { FLT_MIN, FLT_MIN };
+	void AABB::fit(const Vector2* points, unsigned int count) {//fit an AABB around a bounding region given points
+		m_min = { FLT_MAX, FLT_MAX };
+		m_max = { FLT_MIN, FLT_MIN };
 
-		for (auto& p : points) {
-			min = ::min(min, p);
-			max = ::max(max, p);
+		for (unsigned int i = 0; i < count; ++i, ++points) {
+			m_min = std::min(m_min, *points);
+			m_max = std::max(m_max, *points);
 		}
 	}
 
-	bool AABB::overlaps(const Vector2& p) const {
-		return !(p.x < min.x || p.y < min.y || p.x > max.x || p.y > max.y);
+	bool AABB::overlaps(const Vector2& p) const {//check if two AABBs overlap with one another
+		return !(p.x < m_min.x || p.y < m_min.y || p.x > m_max.x || p.y > m_max.y);
 	}
 
 private:
